@@ -1,0 +1,16 @@
+[
+    {
+        "name" : "hub",
+        "provider" : "git",
+        "provider_params" : {
+            "host" : "https://gitlab.com/tychohub-core"
+        }
+    },
+    {
+        "name" : "pkg",
+        "provider" : "http",
+        "provider_params" : {
+            "host" : ""
+        }
+    }
+]

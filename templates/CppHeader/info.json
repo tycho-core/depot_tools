@@ -1,0 +1,9 @@
+{
+	"name" : "cppheader",
+	"description" : "Create a new hub C++ header file.",
+	"options" : {
+		"name" : {
+			"description" : "Name of the header file to create"
+		}
+	}	
+}

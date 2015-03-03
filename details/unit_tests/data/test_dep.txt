@@ -1,0 +1,2 @@
+hub:project1:branch1
+sandbox:project2:branch2

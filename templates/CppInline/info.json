@@ -1,0 +1,9 @@
+{
+	"name" : "cppinline",
+	"description" : "Create a new hub C++ inline file.",
+	"options" : {
+		"name" : {
+			"description" : "Name of the inline file to create"
+		}
+	}	
+}

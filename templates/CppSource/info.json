@@ -1,0 +1,9 @@
+{
+	"name" : "cppsource",
+	"description" : "Create a new hub C++ source file.",
+	"options" : {
+		"name" : {
+			"description" : "Name of the source file to create"
+		}
+	}	
+}

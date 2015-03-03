@@ -1,0 +1,9 @@
+{
+	"name" : "cpplib",
+	"description" : "Create a new hub C++ library",
+	"options" : {
+		"libname" : {
+			"description" : "Name of the library to create"
+		}
+	}
+}

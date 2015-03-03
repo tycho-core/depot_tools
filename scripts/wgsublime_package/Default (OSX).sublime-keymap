@@ -1,0 +1,7 @@
+[
+	{ "keys" : ["ctrl+alt+c"],  "command" : "ty_create_cppclass"},
+	{ "keys" : ["ctrl+alt+p", "c"],  "command" : "ty_create_pyclass"},
+	{ "keys" : ["ctrl+alt+p", "u"],  "command" : "ty_create_pyunittest"},
+	{ "keys" : ["ctrl+alt+p", "m"],  "command" : "ty_create_pymoduel"},
+	{ "keys" : ["ctrl+alt+f"],  "command" : "ty_format_view"}
+]

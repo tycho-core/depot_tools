@@ -1,0 +1,7 @@
+{
+	"ty_hub_base"        : "./hub",
+	"ty_hub_lib"         : "@{ty_hub_base}/lib",
+	"ty_hub_third_party" : "@{ty_hub_base}/third_party",
+	"ty_hub_app"         : "@{ty_hub_base}/app",
+    "ty_hub_bin_tools"   : "@{ty_hub_base}/bin_tools"
+}

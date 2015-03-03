@@ -1,0 +1,6 @@
+@require(year, date)
+@include("py_comment_line")
+# Tycho Library
+# Copyright (C) @{year} Martin Slater
+# Created : @{date}
+@include("py_comment_line")

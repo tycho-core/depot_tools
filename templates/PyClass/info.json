@@ -1,0 +1,9 @@
+{
+	"name" : "pyclass",
+	"description" : "Create a new hub Python class.",
+	"options" : {
+		"classname" : {
+			"description" : "Name of the class to create"
+		}
+	}	
+}

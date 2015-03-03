@@ -1,0 +1,9 @@
+{
+	"name" : "pyunittest",
+	"description" : "Create a new hub Python unit test.",
+	"options" : {
+		"classname" : {
+			"description" : "Name of the class to create unit test for"
+		}
+	}	
+}

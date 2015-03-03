@@ -1,0 +1,2 @@
+# ignore embedded hub libraries
+build/*

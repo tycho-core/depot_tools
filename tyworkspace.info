@@ -1,0 +1,9 @@
+{
+    "dependencies" : [ 
+        "pkg:llvm:3.4"
+    ],
+    "workspace_mappings" : {
+        "ty_hub_bin_tools" : "tools"
+    }
+}
+

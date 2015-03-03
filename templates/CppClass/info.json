@@ -1,0 +1,9 @@
+{
+	"name" : "cppclass",
+	"description" : "Create a new hub C++ class.",
+	"options" : {
+		"classname" : {
+			"description" : "Name of the class to create"
+		}
+	}	
+}

@@ -1,0 +1,6 @@
+@require(year, date)
+@include("cpp_comment_line")
+// Tycho Library
+// Copyright (C) @{year} Martin Slater
+// Created : @{date}
+@include("cpp_comment_line")
