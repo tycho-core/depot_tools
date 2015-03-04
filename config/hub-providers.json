@@ -10,7 +10,7 @@
         "name" : "pkg",
         "provider" : "http",
         "provider_params" : {
-            "host" : ""
+            "host" : "https://sourceforge.net/projects/acmehub/files/packages"
         }
     }
 ]

@@ -10,7 +10,6 @@
 from details.package.provider_base import ProviderConfig
 import details.package.source.git.provider as GitProvider
 import details.package.source.http.provider as HttpProvider
-import details.package.source.p4.provider as P4Provider
 from details.package.provider_factory import ProviderFactory
 from details.utils.misc import vlog
 
