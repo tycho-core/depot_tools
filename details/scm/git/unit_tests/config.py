@@ -17,10 +17,10 @@ class Config(object):
     test_repos = ['hubTestProj1']
     github_auth_token = "c42149b432652d992a122ee09f720f1e344e9b98"   
     github_organization = "AcmeHub"
-    username = 'test-hub'
-    password = 'l1cens3'
+    username = 'tycho-test'
+    password = 'vZkAfr9hx5Nt22r'
     test_repo_name = 'hubTestProj1'
     test_branch_name = 'branch1'
-    test_host = 'https://github.com/AcmeHub'
+    test_host = 'https://gitlab.com/tychohub-unittests'
     test_repo_url = '%s/%s.git' % (test_host, test_repo_name)
     test_repo_invalid_url = '%s/Idontexist.git' % (test_host)
