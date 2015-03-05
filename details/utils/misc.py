@@ -110,11 +110,6 @@ def execute(executable, root_dir, args, capture=True):
     vlog(cmd)
     vlog(root_dir)
 
-
- #   import traceback
-#    traceback.print_stack()
-
-
     if capture:
         # there is a problem on OS X with Python 2.7.6 where cwd is not being set correctly in
         # the subprocess.Popen call. Manually change to the correct directory before the call
