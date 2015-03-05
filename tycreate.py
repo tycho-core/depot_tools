@@ -31,6 +31,10 @@ class CreateApp(object):
         context = Context()
         self.templates = Template.get_available_templates(context, context.template_path)
 
+    def print_error_context(self):
+        """ Override to print extra error information when an exception is caught """
+        pass
+
     def add_command_line_options(self, parser):
         parser.add_argument('--output', '-o', action='store', help='Output directory')
         

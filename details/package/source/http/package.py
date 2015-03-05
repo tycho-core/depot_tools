@@ -43,8 +43,7 @@ class Package(PackageBase):
         if pkg_type == 'archive':
             archive_name = pkg_info.get_option('archive_name')
             assert archive_name != None
-            archive_path = provider.cache_package_file(self, archive_name)
-            print archive_path
+            archive_path = provider.cache_package_file(self, archive_name, True)
             _, ext = os.path.splitext(archive_path)
 
             decompress_handlers = {
@@ -58,7 +57,7 @@ class Package(PackageBase):
             decompress_handlers[ext](archive_path, local_dir)
 
         # append version to packing info file and save
-        src_path = provider.cache_package_file(self, provider.context.package_info_filename)
+        src_path = provider.cache_package_file(self, provider.context.package_info_filename, True)
         local_pkg_info = PackageInfo.create_from_json_file(src_path)
         local_pkg_info.add_option('remote_version', provider.make_pkg_url(self.name, self.version))
         this_version = Dependency(provider.source_name, self.name, self.version)

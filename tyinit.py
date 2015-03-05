@@ -42,6 +42,10 @@ class InitTools(object):
         self.depot_dir = None
         self.tools_dir = None
 
+    def print_error_context(self):
+        """ Override to print extra error information when an exception is caught """
+        pass
+        
     def add_command_line_options(self, parser):
         subparsers = parser.add_subparsers()
         add_command_line_action(subparsers, "install-aliases", "Install aliases for hub commands")
