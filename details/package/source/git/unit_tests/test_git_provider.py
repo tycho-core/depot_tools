@@ -58,7 +58,8 @@ class TestGitProvider(TestCase):
                           Provider.find_package,
                           provider,
                           'hubInvalid',
-                          'master')
+                          'master',
+                          True)
 
         # test invalid version
         self.assertRaises(PackageNotFound, 

@@ -1,6 +1,6 @@
 #-----------------------------------------------------------------------------
 # Tycho Library
-# Copyright (C) 2015 Wargaming.net
+# Copyright (C) 2015 Martin Slater
 # Created : Tuesday, 03 February 2015 11:45:34 AM
 #-----------------------------------------------------------------------------
 #pylint: disable=C0111
