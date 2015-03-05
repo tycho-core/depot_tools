@@ -38,7 +38,7 @@ class Package(PackageBase):
 
         return Repo(remote_url, root_dir=local_dir)
 
-    def get_package_info(self):
+    def get_package_info(self, refresh=True):
         """ Returns the info for this package """
 
         # check if we have them already cached
@@ -46,7 +46,7 @@ class Package(PackageBase):
             return self.package_info
 
         # not cache so grab the repo
-        self.package_info = self.provider.get_package_info(self)
+        self.package_info = self.provider.get_package_info(self, refresh)
         return self.package_info
 
 

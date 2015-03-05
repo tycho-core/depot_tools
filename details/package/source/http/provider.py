@@ -61,32 +61,34 @@ class Provider(ProviderBase):
         return '%s%s/%s' % (str(self.host_url), pkg_name, pkg_version)
     
 
-    def find_package(self, pkg_name, pkg_version):
+    def find_package(self, pkg_name, pkg_version, refresh=True):
         vlog('Looking for package %s-%s' % (pkg_name, pkg_version))
 
         pkg = HttpPackage(self, pkg_name, pkg_version)
-        if not self.get_package_info(pkg):
+        if not self.get_package_info(pkg, refresh):
             vlog('Could not find %s-%s' % (pkg_name, pkg_version))
             raise PackageNotFound(self, pkg_name, pkg_version, "Package or version does not exist")
 
         vlog('Found package %s-%s' % (pkg_name, pkg_version))
         return pkg
 
-    def get_package_info(self, package):
+    def get_package_info(self, package, refresh=True):
         """
         Get the PackageInfo describing this package
 
         Returns:
             PackageInfo() : Information about this package
         """
-        cached_path = self.cache_package_file(package, self.context.package_info_filename)
+        cached_path = self.cache_package_file(package, 
+                                              self.context.package_info_filename,
+                                              refresh)
         
         if not cached_path:
             return None
 
         return PackageInfo.create_from_json_file(cached_path)
 
-    def cache_package_file(self, package, rel_path):
+    def cache_package_file(self, package, rel_path, refresh):
         """ Cache a file from the provider locally """
         pkg_url = self.make_pkg_url(package.name, package.version)
 

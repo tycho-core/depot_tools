@@ -24,9 +24,9 @@ class Package(PackageBase):
     def __init__(self, provider, pkg_name, pkg_version):
         super(Package, self).__init__(provider, pkg_name, pkg_version)   
             
-    def get_package_info(self):
+    def get_package_info(self, refresh=True):
         """ Returns the info for this package """
-        return self.provider.get_package_info(self)
+        return self.provider.get_package_info(self, refresh)
 
     def checkout(self, local_dir):
         provider = self.provider

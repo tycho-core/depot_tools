@@ -76,8 +76,12 @@ class Context(object):
         # Command line options we were run with
         self.options = None
 
-        # mapping to use when mapping packages in to workspace
+        # Mapping to use when mapping packages in to workspace
         self.filesystem_mappings = None
+
+        # Current dependency being processed or none if not in this phase. 
+        # This is used for error reporting
+        self.current_dependency = None 
 
         # makes sure temp dir exists
         if not os.path.exists(self.temp_dir):

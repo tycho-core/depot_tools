@@ -13,7 +13,6 @@ import argparse
 import os.path
 from details.context import Context
 from details.utils.misc import vlog, enable_verbose_log
-from details.package.provider_base import MissingParam
 
 #-----------------------------------------------------------------------------
 # Class
@@ -49,8 +48,7 @@ class ConsoleApp(object):
             self.context.verbose = True
             enable_verbose_log()
             vlog(self.options)
-
-
+            
     def app_main(self):
         """ Main entry point for the application """
         return_code = 1
@@ -61,9 +59,11 @@ class ConsoleApp(object):
                 return_code = self.__app_main_aux()
             except Exception as ex:
                 print ex
+                self.app.print_error_context()
         sys.exit(return_code)
 
     def __app_main_aux(self):
+        """ Main entry point for the application """
         return self.app.app_main(self.context, self.options)
 
 

@@ -109,6 +109,12 @@ def execute(executable, root_dir, args, capture=True):
     cmd.extend(args)
     vlog(cmd)
     vlog(root_dir)
+
+
+ #   import traceback
+#    traceback.print_stack()
+
+
     if capture:
         # there is a problem on OS X with Python 2.7.6 where cwd is not being set correctly in
         # the subprocess.Popen call. Manually change to the correct directory before the call
@@ -124,7 +130,7 @@ def execute(executable, root_dir, args, capture=True):
         process.wait()
         out = process.stdout.read()
         err = process.stderr.read()
-        vlog('%s\n%s' % (out, err))
+        #vlog('%s\n%s' % (out, err))
         if root_dir and len(root_dir):
             os.chdir(cur_dir)
         if process.returncode == 1:

@@ -1,11 +1,39 @@
 [
     {
-        "name" : "hub",
+        "name" : "tycore",
         "provider" : "git",
         "provider_params" : {
             "host" : "https://gitlab.com/tychohub-core"
         }
     },
+    {
+        "name" : "tythirdparty",
+        "provider" : "git",
+        "provider_params" : {
+            "host" : "https://gitlab.com/tychohub-thirdparty"
+        }
+    },
+    {
+        "name" : "tyapps",
+        "provider" : "git",
+        "provider_params" : {
+            "host" : "https://gitlab.com/tychohub-apps"
+        }
+    },
+    {
+        "name" : "tysandbox",
+        "provider" : "git",
+        "provider_params" : {
+            "host" : "https://gitlab.com/tychohub-sandbox"
+        }
+    },	
+    {
+        "name" : "tybuildtools",
+        "provider" : "git",
+        "provider_params" : {
+            "host" : "https://gitlab.com/tychohub-buildtools"
+        }
+    },      
     {
         "name" : "pkg",
         "provider" : "http",

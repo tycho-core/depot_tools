@@ -10,11 +10,10 @@
 import os
 import os.path
 import argparse
-import subprocess
 import json
 import six
 from details.depends import print_conflicts
-from details.utils.misc import fatal_error, log, vlog, add_command_line_action, log_banner
+from details.utils.misc import fatal_error, log, add_command_line_action, log_banner
 from details.utils.file import  get_directory_tree
 from details.scm.git.thehub import TheHub
 from details.template import Template
@@ -31,7 +30,7 @@ from details.workspace_info import WorkspaceInfo
 class Workspace(object):
     """ Object representing the current workspace."""
 
-    def __init__(self, context, root_dir):
+    def __init__(self, context, root_dir, refresh_dependencies = True):
         """ Constructor """
 
         # root directory of the workspace
@@ -53,7 +52,8 @@ class Workspace(object):
         # load workspace info file and setup mappings
         self.__info = WorkspaceInfo.create_from_json_file(self.get_workspace_info_path())
         self.__package_set = PackageSet.create_from_dependency(self.context, 
-                                                               self.__info.get_dependencies())
+                                                               self.__info.get_dependencies(),
+                                                               refresh_dependencies)
         # setup the mappings
         mappings = WorkspaceMapping(self.root_dir)
 
@@ -72,7 +72,7 @@ class Workspace(object):
         self.context.filesystem_mappings = mappings
 
         # bind the packages into the workspace
-        self.__package_set.bind_packages(mappings)
+        self.__package_set.bind_packages(mappings, refresh_dependencies)
 
     @staticmethod
     def create_new_workspace(context, root_dir, quiet=False):        
@@ -132,32 +132,7 @@ class Workspace(object):
                 return False
 
         package_set.update_package_versions(force=force, preview=preview)
-#        package_set.update_packages()
 
-        # # make sure they are all mapped into the workspace and updated
-        # for dep in dependencies:
-        #     repo_dir = os.path.join(self.root_dir, dep.name)
-        #     repo = Repo(repo_dir)
-        #     if not os.path.exists(repo_dir):
-        #         os.makedirs(repo_dir)
-        #         log('Syncing %s to %s' % (dep, repo_dir))
-        #         repo.clone_branch(self.context.make_repo_url(dep.name), dep.branch) 
-        #     else:
-        #         # ensure repo is up to date
-        #         log('Updating %s in %s' % (dep, repo_dir))
-        #         repo.pull()
-                
-        #         # check that it is on the correct branch
-        #         current_branch = repo.branch_name()
-        #         vlog('%s : Current branch is %s' % (dep.name, current_branch))
-        #         if current_branch != dep.branch:
-        #             log('%s : Switching branch from %s to %s' % 
-        #                 (dep.name, current_branch, dep.branch))
-        #             repo.switch_branch(dep.branch)
-                
-        # # make sure .gitignore file is up to date
-        # self.update_git_ignore_file(dependencies)
-        
         return True
 
     def verify(self):
@@ -311,7 +286,7 @@ class Workspace(object):
                                          action_help='Update all libraries in the workspace')
 
         update.add_argument('--refresh', '-r', action='store_true', 
-                            help='Refresh dependencies. By default dependent repositories' \
+                            help='Refresh dependencies. By default dependent repositories ' \
                                         'are not updated before dependency checking.')   
 
         update.add_argument('--force', '-f', action='store_true', 
@@ -343,12 +318,14 @@ class Workspace(object):
                             help='Show detailed status of all repositories in the workspace')
         status.add_argument('--raw', '-r', 
                             action='store_true', 
-                            help='Show raw output from underlying provider of all repositories in the workspace')
+                            help='Show raw output from underlying provider of all repositories' \
+                                 ' in the workspace')
         
         
         # versions action
         add_command_line_action(subparsers, 'versions', 
-                                action_help='Print the projects and versions this workspace depends on')
+                                action_help='Print the projects and versions this' \
+                                             ' workspace depends on')
 
         # verify action
         add_command_line_action(subparsers, 'verify', 

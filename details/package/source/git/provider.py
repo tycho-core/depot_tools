@@ -8,7 +8,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 from os import path, makedirs
-from details.package.provider_base import ProviderBase, MissingParam, PackageNotFound
+from details.package.provider_base import ProviderBase, MissingParam, PackageNotFound, PackageInfoException
 from details.package.package_binding import PackageBinding
 from details.package.package_info import PackageInfo
 from details.package.source.git.package import Package as GitPackage
@@ -40,6 +40,8 @@ class Provider(ProviderBase):
         self.username = None
         self.password = None
         self.anonymous = False
+        self.__packages_updated = set()
+        self.__package_info_cache = {}
 
         # username and password are optional
         if 'username' in params and 'password' in params:
@@ -65,7 +67,7 @@ class Provider(ProviderBase):
         """ Construct the URL that points to the package """
         return Url('%s/%s.git' % (str(self.host_url), pkg_name))
 
-    def find_package(self, pkg_name, pkg_version):
+    def find_package(self, pkg_name, pkg_version, refresh):
         vlog('Looking for package %s-%s' % (pkg_name, pkg_version))
         
         # check that this package exists on the server
@@ -75,29 +77,33 @@ class Provider(ProviderBase):
             raise PackageNotFound(self, pkg_name, pkg_version, "Version does not exist")
         vlog('Found package %s-%s' % (pkg_name, pkg_version))
         return GitPackage(self, pkg_name, pkg_version)
-
-    def get_package_dependencies(self, pkg):
-        pkg_info = self.get_package_info(pkg)
-        return pkg_info.get_dependencies()
           
-    def get_package_info(self, pkg):
+    def get_package_info(self, pkg, refresh=True):
         # check to see if we have cached the info for this package. If not
         # then we need to sync the entire repository so we can get at them. Would be ideal
         # to not need to do this....
-        vlog('Getting package info for %s-%s' % (pkg.name, pkg.version))
+        vlog('Getting package info for %s-%s (refresh=%s)' % (pkg.name, pkg.version, str(refresh)))
+        key = '%s-%s' % (pkg.name, pkg.version)        
+
         cached_pkg_info = self.__get_cached_package_info(pkg)
 
-        if not cached_pkg_info:
+#        print "%s - %s - %s" % (cached_pkg_info, refresh, self.__packages_updated)
+        if not cached_pkg_info or (refresh and not key in self.__packages_updated):
             vlog('Caching packing info...')
             cached_pkg = deepcopy(pkg)
             cache_dir = self.__get_package_cache_dir(cached_pkg)
             bound_pkg = PackageBinding(cached_pkg, cache_dir)
             if bound_pkg.is_installed():
-                bound_pkg.update()
+                if refresh:
+                    bound_pkg.update()
+                    self.__packages_updated.add(key)
             else:
                 bound_pkg.checkout()
 
             cached_pkg_info = self.__get_cached_package_info(cached_pkg)
+
+        if not cached_pkg_info:
+            raise PackageInfoException(self, pkg.name, pkg.version, '')
 
         return cached_pkg_info        
       
@@ -149,6 +155,9 @@ class Provider(ProviderBase):
         """ check the dependency cache for this package """
         cache_dir = self.__get_package_cache_dir(pkg)
 
+        if cache_dir in self.__package_info_cache:
+            return self.__package_info_cache[cache_dir]
+
         if not self.__check_package_repo_cache(pkg.name, cache_dir):
             Provider.__clean_package_repo_cache(cache_dir)
             return None
@@ -156,10 +165,12 @@ class Provider(ProviderBase):
         # get the dependency file
         dep_file = os.path.join(cache_dir, self.context.package_info_filename)
         if not os.path.exists(dep_file):
-            log('nodepfile : %s' % (dep_file))
             return None
 
-        return PackageInfo.create_from_json_file(dep_file)
+        pkg_info = PackageInfo.create_from_json_file(dep_file)
+        self.__package_info_cache[cache_dir] = pkg_info
+        
+        return pkg_info
 
     def __cache_dependencies(self, pkg):
         """ Cache the dependencies for the passed package locally """

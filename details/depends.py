@@ -160,7 +160,7 @@ class Dependency(object):
         """
 
         node = self
-        while node != None:
+        while node != None and node.parent != None:
             node = node.parent
 
         return node 

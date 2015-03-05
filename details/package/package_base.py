@@ -113,12 +113,12 @@ class PackageBase(object):
         """
         return self.local_filesystem_status(dst_dir).is_modified()
 
-    def get_dependencies(self):
+    def get_dependencies(self, refresh_dependencies=True):
         """ Returns the packages this package depends on """
-        return self.provider.get_package_info(self).get_dependencies()
+        return self.provider.get_package_info(self, refresh_dependencies).get_dependencies()
 
     @abstractmethod
-    def get_package_info(self):
+    def get_package_info(self, refresh_dependencies):
         """ Returns the info for this package """
         pass
 

@@ -31,26 +31,36 @@ class PackageManager(object):
         pass
 
     def __init__(self, context, providers):
-        self.context = context
+        self.__context = context
         # setup providers
-        self.provider_factory = ProviderFactory(context)
+        self.__provider_factory = ProviderFactory(context)
 
         # add provider types
-        self.provider_factory.add_provider_class('git', GitProvider.Provider)
-        self.provider_factory.add_provider_class('http', HttpProvider.Provider)
+        self.__provider_factory.add_provider_class('git', GitProvider.Provider)
+        self.__provider_factory.add_provider_class('http', HttpProvider.Provider)
  
         # add providers
         for provider in providers:
-            config = ProviderConfig(self.context, provider)
-            self.provider_factory.add_provider(config.name, config.provider_name, 
-                                               config.provider_params)
+            config = ProviderConfig(self.__context, provider)
+            self.__provider_factory.add_provider(config.name, config.provider_name, 
+                                                 config.provider_params)
             vlog('PackageManager : Imported Provider : %s : %s' % 
                  (config.name, config.provider_name))
+
+        # package cache
+        self.__cache = {}            
             
-    def get_package(self, provider_name, pkg_name, pkg_version):
+    def get_package(self, provider_name, pkg_name, pkg_version, refresh=True):
         """ Get a package from the specified provider """
-        provider = self.provider_factory.get_provider(provider_name)
-        return provider.find_package(pkg_name, pkg_version)
+
+        # check if we have already cached this
+        key = "%s-%s-%s" % (provider_name, pkg_name, pkg_version)
+        if key in self.__cache:
+            return self.__cache[key]
+        provider = self.__provider_factory.get_provider(provider_name)
+        pkg = provider.find_package(pkg_name, pkg_version, refresh)
+        self.__cache[key] = pkg
+        return pkg
 
 
     def get_package_dependency_tree(self, package):

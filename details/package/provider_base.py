@@ -50,10 +50,25 @@ class PackageNotFound(ProviderException):
         self.reason = reason
 
     def __str__(self):
-        return "Provider '%s' failed to find package '%s:%s' : %s" % (self.provider.name, 
+        return "Provider '%s' failed to find package '%s:%s' : %s" % (self.provider.source_name, 
                                                                       self.package_name,
                                                                       self.package_version,
                                                                       self.reason)
+
+class PackageInfoException(ProviderException):
+    """Package info file is not presetn for a package """
+
+    def __init__(self, provider, package_name, package_version, reason):
+        """ Constructor """
+        super(PackageInfoException, self).__init__(provider)
+        self.package_name = package_name
+        self.package_version = package_version
+        self.reason = reason
+
+    def __str__(self):
+        return "No PackageInfo for package '%s:%s'" % (self.package_name,
+                                                       self.package_version,
+                                                       self.reason)
 
 class MissingParam(ProviderException): 
     """ Required parameter is missing """
@@ -76,7 +91,7 @@ class InvalidParam(ProviderException):
         self.param_value = param_value
 
     def __str__(self):
-        return "Provider '%s' has invalid value '%s' for parameter '%s'" % (self.provider.name, 
+        return "Provider '%s' has invalid value '%s' for parameter '%s'" % (self.provider.source_name, 
                                                                             self.param_value,
                                                                             self.param_name)
 
@@ -94,7 +109,7 @@ class ProviderBase(object):
         self.source_name = source_name
 
     @abstractmethod
-    def find_package(self, pkg_name, pkg_version):
+    def find_package(self, pkg_name, pkg_version, refresh):
         """
         Get the package from this provider.
 
@@ -104,7 +119,7 @@ class ProviderBase(object):
         pass
 
     @abstractmethod
-    def get_package_info(self, package):
+    def get_package_info(self, package, refresh):
         """
         Get the PackageInfo describing this package
 
@@ -113,14 +128,14 @@ class ProviderBase(object):
         """
         pass
 
-    def get_package_dependencies(self, package):
+    def get_package_dependencies(self, package, refresh=True):
         """
         Get the packages a package depends on.
 
         Returns:
             Dependency() : Dependencies for this package    
         """
-        pkg_info = self.get_package_info(package)
+        pkg_info = self.get_package_info(package, refresh)
         return pkg_info.get_dependencies()        
 
     def is_versioned(self):

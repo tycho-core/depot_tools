@@ -50,7 +50,7 @@ class TestGitProvider(TestCase):
     def test_find_package(self):
         # find package tests
         provider = self.__make_provider()
-        pkg = provider.find_package(TestGitProvider.__test_pkg_name, 'master')
+        pkg = provider.find_package(TestGitProvider.__test_pkg_name, 'master', True)
         self.assertIsNotNone(pkg)
 
         # test invalid package
@@ -65,13 +65,14 @@ class TestGitProvider(TestCase):
                           Provider.find_package,
                           provider,
                           TestGitProvider.__test_pkg_name,
-                          'Tiger')
+                          'Tiger',
+                          True)
 
     def test_get_package_dependencies(self):
         provider = self.__make_provider()
-        pkg = provider.find_package(TestGitProvider.__test_pkg_name, 'master')
+        pkg = provider.find_package(TestGitProvider.__test_pkg_name, 'master', True)
         self.assertIsNotNone(pkg)
-        deps = provider.get_package_dependencies(pkg)
+        deps = provider.get_package_dependencies(pkg, True)
         self.assertIsNotNone(deps)
         self.assertEqual(deps.source, Dependency.SourceRoot)
         self.assertEqual(len(deps.children), 1)

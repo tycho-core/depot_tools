@@ -29,28 +29,28 @@ class PackageSet(object):
         self.__conflicted_dependencies = None
 
     @staticmethod
-    def create_from_dependency(context, root_dep):
+    def create_from_dependency(context, root_dep, refresh_dependencies):
         """ Create a package set from root dependency """
         dset = PackageSet(context)
-        dset.set_root_dependency(root_dep)
+        dset.set_root_dependency(root_dep, refresh_dependencies)
         return dset
 
     @staticmethod
-    def create_from_dependency_string(context, in_str):
+    def create_from_dependency_string(context, in_str, refresh_dependencies=True):
         """ Create a package set from a dependency string """
         dep = Dependency.create_from_string(in_str)
-        return PackageSet.create_from_dependency(context, dep)
+        return PackageSet.create_from_dependency(context, dep, refresh_dependencies)
 
     @staticmethod
-    def create_from_dependency_file(context, file_path):
+    def create_from_dependency_file(context, file_path, refresh_dependencies=True):
         """ Create a package set from a dependency file """
         dep = Dependency.create_from_file(file_path)
-        return PackageSet.create_from_dependency(context, dep)
+        return PackageSet.create_from_dependency(context, dep, refresh_dependencies)
 
-    def set_root_dependency(self, root_dep):
+    def set_root_dependency(self, root_dep, refresh_dependencies=True):
         """ Set the root dependencies """
         self.__root_dependency = root_dep
-        self.__build_dependency_graph()
+        self.__build_dependency_graph(refresh_dependencies)
 
     def get_root_dependency(self):
         """ Get the root of the dependency graph for this set """
@@ -126,10 +126,10 @@ class PackageSet(object):
             
             log('NOT OK - There are conflicted dependencies')
 
-    def bind_packages(self, mappings): 
+    def bind_packages(self, mappings, refresh_dependencies=True): 
         """ Creates the bindings for all packages to the local filesystem """
         for pkg in self.__packages:
-            info = pkg.get_package_info()
+            info = pkg.get_package_info(refresh_dependencies)
             pkg_dir = '%s/%s' % (info.get_workspace_mapping(), pkg.name)                    
             pkg_dir = mappings.apply_templates(pkg_dir)
             pkg_dir = os.path.abspath(pkg_dir)
@@ -141,6 +141,11 @@ class PackageSet(object):
         Packages that are on the incorrect version will be updated to the correct version"""        
         for binding in self.__package_bindings:
             package = binding.package
+
+            # track current dependency for error reporting
+            self.__context.current_dependency = package.dependency
+
+            # get current package status
             status = binding.local_filesystem_status()
             local_version = status.get_version()
             desired_version = package.version
@@ -167,13 +172,19 @@ class PackageSet(object):
                     else:
                         log("Failed to change %s from version '%s' to '%s'" % (package.name, 
                                                                                local_version, 
-                                                                               desired_version))                        
+                                                                               desired_version))
+            # track current dependency for error reporting
+            self.__context.current_dependency = None
+
 
     def update_packages(self):
         """ Update all packages. This will install them if not present and ensure they are 
         up to date if the are """
         log('Updating packages')
         for pkg in self.__package_bindings:
+            # track current dependency for error reporting
+            self.__context.current_dependency = pkg.package.dependency
+
             if pkg.is_installed():
                 log('    Updating %s...' % (pkg.display_name()))
                 pkg.update()
@@ -181,19 +192,31 @@ class PackageSet(object):
                 log('    Checking out %s...' % (pkg.display_name()))
                 pkg.checkout()
 
+            # track current dependency for error reporting
+            self.__context.current_dependency = None
+
     def get_package_bindings(self):
+        """ Returns the local bindings for this package set. """
         return self.__package_bindings
         
-    def __build_dependency_graph(self):
+    def __build_dependency_graph(self, refresh_dependencies):
         """ Get full graph of dependencies for this set of packages """
         package_map = {}
 
         def get_dep(dep):
             """ Retrieve package dependencies """
-            pkg = self.__context.package_manager.get_package(dep.source, dep.name, dep.branch)
-            dep = pkg.get_dependencies()
+            # track current dependency for error reporting
+            self.__context.current_dependency = dep
+
+            pkg = self.__context.package_manager.get_package(dep.source, dep.name, dep.branch,
+                                                             refresh_dependencies)
+            dep = pkg.get_dependencies(refresh_dependencies)
             #dep.package = pkg
             package_map[str(dep)] = pkg
+
+            # track current dependency for error reporting
+            self.__context.current_dependency = None
+
             return dep
 
         # build the dependency graph
@@ -201,9 +224,15 @@ class PackageSet(object):
         self.__flattened_dependencies = self.__root_dependency.flatten_dependencies()
         vlog(self.__flattened_dependencies)
         for dep in self.__flattened_dependencies:
-            self.__packages.append(
-                self.__context.package_manager.get_package(dep.source, dep.name, dep.branch)
-                )
+            # track current dependency for error reporting
+            self.__context.current_dependency = dep
+
+            pkg = self.__context.package_manager.get_package(dep.source, dep.name, dep.branch)
+            pkg.dependency = dep
+            self.__packages.append(pkg)
+
+            # track current dependency for error reporting
+            self.__context.current_dependency = None
 
         # check for package conflicts
         self.__conflicted_dependencies = self.__root_dependency.get_dependency_conflicts()

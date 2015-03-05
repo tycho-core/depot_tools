@@ -13,6 +13,7 @@ Command line tool to manage hub workspaces
 #-----------------------------------------------------------------------------
 from details.workspace import Workspace
 from details.console_app import ConsoleApp        
+import sys
 
 #-----------------------------------------------------------------------------
 # Main
@@ -22,38 +23,61 @@ class WorkspaceApp(object):
     """ Application """
     description = '? for documentation.'
 
+    def __init__(self):
+        self.__context = None
+
     def add_command_line_options(self, parser):
         Workspace.add_command_line_options(parser)
 
+    def print_error_context(self):
+        """ Override to print extra error information when an exception is caught """
+        if self.__context.current_dependency:
+            chain = self.__context.current_dependency.get_dependency_chain()
+            chain_len = len(chain)
+            cur_dep = 0
+            print ''
+            for link in chain:
+                sys.stdout.write(str(link))
+                if cur_dep < chain_len -1:
+                    sys.stdout.write(' -> ')
+                cur_dep += 1
+            print ''
+
+
+
     def app_main(self, context, options):
         """ Main entry point """
+        self.__context = context
         if options.action == 'init':
             if not Workspace.create_new_workspace(context, context.current_dir):
                 print "Failed to create workspace"
             else:
                 workspace = Workspace(context, context.current_dir)
                 workspace.update()
-
+        elif options.action == 'status':
+            workspace = Workspace(context, context.current_dir, False)
+            workspace.status(detailed=options.detailed, raw=options.raw)
+        elif options.action == 'show':
+            workspace = Workspace(context, context.current_dir, False)
+            if options.subaction == 'branches':
+                workspace.show_branches()            
+        elif options.action == 'verify':
+            workspace = Workspace(context, context.current_dir, False)
+            if workspace.verify():
+                print 'Workspace is ok'
+            else:
+                print 'Workspace is not ok'
         else:
-            workspace = Workspace(context, context.current_dir)
-            if options.action == 'verify':
-                if workspace.verify():
-                    print 'Workspace is ok'
-                else:
-                    print 'Workspace is not ok'
+            workspace = Workspace(context, context.current_dir, 
+                                  refresh_dependencies=options.refresh)
         #    elif options.action == 'clean':
         #       workspace.clean()
-            elif options.action == 'status':
-                workspace.status(detailed=options.detailed, raw=options.raw)
-            elif options.action == 'depends':
+            if options.action == 'depends':
                 workspace.print_depends(refresh=options.refresh)
             elif options.action == 'update':
                 workspace.update(options.force, options.preview)
             elif options.action == 'foreach':           
                 workspace.foreach(options.args)
-            elif options.action == 'show':
-                if options.subaction == 'branches':
-                    workspace.show_branches()
             elif options.action == 'import':
                 workspace.import_project()
             elif options.action == 'versions':
