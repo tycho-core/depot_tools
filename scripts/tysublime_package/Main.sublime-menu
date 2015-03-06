@@ -1,7 +1,7 @@
 [
 	{
-		"caption" : "Tycho Hub",
-		"id": "tyHub",
+		"caption" : "Tycho",
+		"id": "tycho",
 		"children":
 		[
 			{ "id": "create_cpp_class",  "command": "ty_create_cppclass", "caption" : "Create C++ Class" },
