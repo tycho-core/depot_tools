@@ -155,8 +155,8 @@ class PackageSet(object):
                 if preview:
                     log("%s not installed, would be checked out." % str(package))
                 else:
-#                    self.__context.console.update_task('%s : Checking out' % 
-#                                                       (package.display_name()))
+                    self.__context.console.update_task('%s : Checking out' % 
+                                                       (package.display_name()))
                     binding.checkout()                    
             elif local_version != desired_version:
                 if preview:
