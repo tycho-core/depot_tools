@@ -191,10 +191,10 @@ class TyFormatViewCommand(sublime_plugin.TextCommand):
         temp_file.close()
         file_format_cmd = TyFormatFileCommand(view.window)
         if file_format_cmd.format_file(temp_name):
-            print('fwoo')
             temp_file = open(temp_name, 'r')
             content = temp_file.read()
             temp_file.close()
+            os.remove(temp_file)
             view.replace(edit, region, content)
             os.remove(temp_name)
 
