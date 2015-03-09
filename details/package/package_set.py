@@ -146,6 +146,7 @@ class PackageSet(object):
             self.__context.current_dependency = package.dependency
 
             # get current package status
+            self.__context.console.update_task('%s : Getting status' % (package.display_name()))
             status = binding.local_filesystem_status()
             local_version = status.get_version()
             desired_version = package.version
@@ -154,6 +155,8 @@ class PackageSet(object):
                 if preview:
                     log("%s not installed, would be checked out." % str(package))
                 else:
+#                    self.__context.console.update_task('%s : Checking out' % 
+#                                                       (package.display_name()))
                     binding.checkout()                    
             elif local_version != desired_version:
                 if preview:
@@ -166,6 +169,8 @@ class PackageSet(object):
                                                                 desired_version))
                 else:
                     if binding.change_version(force=force):
+                        self.__context.console.update_task('%s : Changing version out' % 
+                                                           (package.display_name()))
                         log("Changed %s from version '%s' to '%s'" % (package.name, 
                                                                       local_version, 
                                                                       desired_version))

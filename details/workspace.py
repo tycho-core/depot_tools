@@ -141,8 +141,9 @@ class Workspace(object):
                 print_conflicts(package_set.conflicted_dependencies())
                 return False
 
+        self.context.console.start_task('Updating packages')
         package_set.update_package_versions(force=force, preview=preview)
-
+        self.context.console.end_task()
         return True
 
     def verify(self):
