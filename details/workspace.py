@@ -42,18 +42,26 @@ class Workspace(object):
         self.__mappings = None
         self.__info = None
 
+        context.console.write_line('Initialising workspace')        
+
         # configure providers
+        context.console.start_task('Configuring providers')
         provider_file = open(os.path.join(context.config_dir, 'hub-providers.json'), 'r')
         providers = json.load(provider_file)
         provider_file.close()
         self.context.package_manager = PackageManager(self.context, providers)
+        context.console.end_task()
 
 
         # load workspace info file and setup mappings
         self.__info = WorkspaceInfo.create_from_json_file(self.get_workspace_info_path())
+
+        context.console.start_task('Processing dependencies')
         self.__package_set = PackageSet.create_from_dependency(self.context, 
                                                                self.__info.get_dependencies(),
                                                                refresh_dependencies)
+        context.console.end_task()
+
         # setup the mappings
         mappings = WorkspaceMapping(self.root_dir)
 
@@ -116,6 +124,8 @@ class Workspace(object):
         Args:
             force(Bool): In case of dependency conflict force syncing to first found branch
         """
+        self.context.console.write_line('Updating workspace')
+
         package_set = self.__package_set
 
         # check for conflicted dependencies     

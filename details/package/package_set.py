@@ -208,6 +208,7 @@ class PackageSet(object):
             # track current dependency for error reporting
             self.__context.current_dependency = dep
 
+            self.__context.console.update_task('Checking package %s' % (str(dep)))
             pkg = self.__context.package_manager.get_package(dep.source, dep.name, dep.branch,
                                                              refresh_dependencies)
             dep = pkg.get_dependencies(refresh_dependencies)

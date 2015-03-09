@@ -112,12 +112,17 @@ class Package(PackageBase):
         # check directory exists
         installed = os.path.exists(local_dir)
         if installed:
+            #todo : this has already been checked above in repo construction
+            #       need remove this call
             valid = repo.is_valid_working_copy()
 
             if valid:
                 version = repo.branch_name()
+
+                #todo : this could be gleened from the repo.status() call
                 modified = not repo.is_clean()
                 if modified:
+                    #todo : this info is not always requried, create on demand
                     raw_modifications = repo.status(capture=True)[1]
 
                     # get git mods and translate to common mods

@@ -48,17 +48,13 @@ class Repo(object):
            # check to see if this is a valid git repo
         if self.is_valid_working_copy():
             # load the git config file
-            try:
-                config = Config()
-                config.load_from_file(os.path.join(self.root_dir, '.git', 'config'))
+            config = Config()
+            config.load_from_file(os.path.join(self.root_dir, '.git', 'config'))
 
-                # get url for remote origin
-                url = config.get_setting('remote', 'origin', 'url')
-                if url:
-                    self.remote_url = Url(url)
-            except():
-                pass
-
+            # get url for remote origin
+            url = config.get_setting('remote', 'origin', 'url')
+            if url:
+                self.remote_url = Url(url)
 
     def __set_remote(self, remote_url, anonymous=True, username=None, password=None):
         """ Set the remote host to use and optionally user credentials """

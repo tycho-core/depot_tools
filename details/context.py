@@ -10,6 +10,7 @@
 import os
 import details.utils.misc as utils
 import details.utils.file as futils
+from details.console_writer import ConsoleWriter
 
 #-----------------------------------------------------------------------------
 # Class
@@ -82,6 +83,9 @@ class Context(object):
         # Current dependency being processed or none if not in this phase. 
         # This is used for error reporting
         self.current_dependency = None 
+
+        # setup console ouput
+        self.console = ConsoleWriter()
 
         # makes sure temp dir exists
         if not os.path.exists(self.temp_dir):
