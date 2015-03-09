@@ -71,8 +71,7 @@ class Package(PackageBase):
         if not self.is_installed(local_dir):
             return False
         repo = self.__make_repo(local_dir)
-        repo.pull(capture=False)
-        return True
+        return repo.pull(capture=True)
 
     def change_version(self, local_dir, force):
         status = self.local_filesystem_status(local_dir)
