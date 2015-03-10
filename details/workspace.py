@@ -124,8 +124,6 @@ class Workspace(object):
         Args:
             force(Bool): In case of dependency conflict force syncing to first found branch
         """
-        self.context.console.write_line('Updating workspace')
-
         package_set = self.__package_set
 
         # check for conflicted dependencies     
