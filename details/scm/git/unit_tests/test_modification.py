@@ -26,11 +26,9 @@ class TestModification(TestCase):
 
 
     __test_data1 = "AM details/scm/git/modification.py"
-    __test_data2 = """
-        AM details/scm/git/modification.py
-         M details/scm/git/repo.py
-        ?? details/scm/git/unit_tests/test_modification.py
-    """
+    __test_data2 = "AM details/scm/git/modification.py\n" \
+                   " M details/scm/git/repo.py\n" \
+                   "?? details/scm/git/unit_tests/test_modification.py"
 
     __test_data2_res = [
         Modification('details/scm/git/modification.py', 

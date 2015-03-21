@@ -8,6 +8,7 @@
 # Imports
 #-----------------------------------------------------------------------------
 from abc import ABCMeta, abstractmethod
+from details.utils.misc import dict_value_or_none
 
 #-----------------------------------------------------------------------------
 # Class
@@ -19,23 +20,21 @@ class ProviderConfig(object):
     def __init__(self, context, params_dict):
         """ Constructor """
         self.context = context
-        self.name = ProviderConfig.__value_or_none(params_dict, 'name')
-        self.provider_name = ProviderConfig.__value_or_none(params_dict, 'provider')
-        self.provider_params = ProviderConfig.__value_or_none(params_dict, 'provider_params')
-
-    @staticmethod
-    def __value_or_none(in_dict, name):
-        """ Return value if the key exists or None otherwise """
-        if name in in_dict:
-            return in_dict[name]
-        return None
+        self.name = dict_value_or_none(params_dict, 'name')
+        self.provider_name = dict_value_or_none(params_dict, 'provider')
+        self.provider_params = dict_value_or_none(params_dict, 'provider_params')
+        self.query_interface_name = dict_value_or_none(params_dict, 'query_interface')
+        self.query_interface_params = dict_value_or_none(params_dict, 'query_interface_params')
+        self.enabled = dict_value_or_none(params_dict, 'enabled')
+        if self.enabled is None:
+            self.enabled = True
 
 class ProviderException(Exception): 
     """ Base of all provider exceptions """
 
     def __init__(self, provider, msg=None):
         """ Constructor """
-        super(ProviderException, self).__init__()
+        super(ProviderException, self).__init__(msg)
         self.provider = provider        
         self.msg = msg
 
@@ -44,56 +43,48 @@ class PackageNotFound(ProviderException):
 
     def __init__(self, provider, package_name, package_version, reason):
         """ Constructor """
-        super(PackageNotFound, self).__init__(provider)
+        msg = "Provider '%s' failed to find package '%s:%s' : %s" % (provider.source_name, 
+                                                                     package_name,
+                                                                     package_version,
+                                                                     reason)
+
+        super(PackageNotFound, self).__init__(provider, msg)
         self.package_name = package_name
         self.package_version = package_version
         self.reason = reason
-
-    def __str__(self):
-        return "Provider '%s' failed to find package '%s:%s' : %s" % (self.provider.source_name, 
-                                                                      self.package_name,
-                                                                      self.package_version,
-                                                                      self.reason)
 
 class PackageInfoException(ProviderException):
     """Package info file is not presetn for a package """
 
     def __init__(self, provider, package_name, package_version, reason):
         """ Constructor """
-        super(PackageInfoException, self).__init__(provider)
-        self.package_name = package_name
-        self.package_version = package_version
-        self.reason = reason
+        msg = "No PackageInfo for package '%s:%s'" % (package_name,
+                                                      package_version)
 
-    def __str__(self):
-        return "No PackageInfo for package '%s:%s'" % (self.package_name,
-                                                       self.package_version,
-                                                       self.reason)
+        if reason and len(reason) > 0:
+            msg += ' - ' + reason
+
+        super(PackageInfoException, self).__init__(provider, msg)
 
 class MissingParam(ProviderException): 
     """ Required parameter is missing """
 
     def __init__(self, provider, param_name):
         """ Constructor """
-        super(MissingParam, self).__init__(provider)
-        self.param_name = param_name
-
-    def __str__(self):
-        return "Provider '%s' missing parameter '%s'" % (self.provider.name, self.param_name)
+        msg = "Provider '%s' missing parameter '%s'" % (provider.name, param_name)
+        super(MissingParam, self).__init__(provider, msg)
+        
 
 class InvalidParam(ProviderException): 
     """ Provided parameter is invalid """
     
     def __init__(self, provider, param_name, param_value):
         """ Constructor """
-        super(InvalidParam, self).__init__(provider)    
-        self.param_name = param_name
-        self.param_value = param_value
+        msg = "Provider '%s' has invalid value '%s' for parameter '%s'" % (provider.source_name, 
+                                                                           param_value,
+                                                                           param_name)
 
-    def __str__(self):
-        return "Provider '%s' has invalid value '%s' for parameter '%s'" % (self.provider.source_name, 
-                                                                            self.param_value,
-                                                                            self.param_name)
+        super(InvalidParam, self).__init__(provider, msg)    
 
 #pylint: disable=R0921
 class ProviderBase(object):
@@ -101,12 +92,15 @@ class ProviderBase(object):
     __metaclass__ = ABCMeta
 
 
-    def __init__(self, source_name, context, name, versioned):
+    def __init__(self, source_name, context, name, versioned, query_interface):
         """ Constructor """
         self.context = context
         self.versioned = versioned
         self.name = name
         self.source_name = source_name
+        self.__query_interface = query_interface
+        if self.__query_interface:
+            self.__query_interface.set_provider(self)
 
     @abstractmethod
     def find_package(self, pkg_name, pkg_version, refresh):
@@ -145,6 +139,12 @@ class ProviderBase(object):
         """
         return self.versioned
 
+    def get_query_interface(self):
+        """ Returns:
+                ProviderQueryInterface : Interface to query provider or None if import
+                cannot be queried 
+        """
+        return self.__query_interface
 
 #-----------------------------------------------------------------------------
 # Main

@@ -30,7 +30,7 @@ class TestPackage(TestCase):
             'host' : '',
             'anonymous' : False,
         }
-        provider = Provider('pkg', self.context, test_params)     
+        provider = Provider('pkg', self.context, test_params, None)     
         self.assertIsNotNone(provider)
         return provider    
     

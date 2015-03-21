@@ -27,9 +27,9 @@ import os
 class Provider(ProviderBase):
     """ Git package provider. Provides packages that are hosted on a git server """
 
-    def __init__(self, name, context, params):
+    def __init__(self, name, context, params, query_interface):
         """ Constructor """
-        super(Provider, self).__init__(name, context, 'git', True)
+        super(Provider, self).__init__(name, context, 'git', True, query_interface)
 
         # host must be specified
         if not 'host' in params:
@@ -87,10 +87,9 @@ class Provider(ProviderBase):
 
         cached_pkg_info = self.__get_cached_package_info(pkg)
 
-#        print "%s - %s - %s" % (cached_pkg_info, refresh, self.__packages_updated)
         if not cached_pkg_info or (refresh and not key in self.__packages_updated):
             vlog('Caching packing info...')
-            cached_pkg = deepcopy(pkg)
+            cached_pkg = pkg
             cache_dir = self.__get_package_cache_dir(cached_pkg)
             bound_pkg = PackageBinding(cached_pkg, cache_dir)
             if bound_pkg.is_installed():

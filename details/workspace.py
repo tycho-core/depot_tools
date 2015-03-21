@@ -10,10 +10,12 @@
 import os
 import os.path
 import argparse
+import subprocess
 import json
 import six
-from details.depends import print_conflicts
+from details.depends import print_conflicts, Dependency
 from details.utils.misc import fatal_error, log, add_command_line_action, log_banner
+from details.utils.misc import dict_value_or_none
 from details.utils.file import  get_directory_tree
 from details.scm.git.thehub import TheHub
 from details.template import Template
@@ -22,6 +24,7 @@ from details.workspace_mapping import WorkspaceMapping
 from details.package.package_manager import PackageManager
 from details.package.package_set import PackageSet
 from details.workspace_info import WorkspaceInfo
+from details.package.provider_query_interface import InteractiveQueryInterface
 
 #-----------------------------------------------------------------------------
 # Class
@@ -124,8 +127,6 @@ class Workspace(object):
         Args:
             force(Bool): In case of dependency conflict force syncing to first found branch
         """
-        self.context.console.write_line('Updating workspace')
-
         package_set = self.__package_set
 
         # check for conflicted dependencies     
@@ -141,16 +142,128 @@ class Workspace(object):
                 print_conflicts(package_set.conflicted_dependencies())
                 return False
 
+        # update all the packages
         self.context.console.start_task('Updating packages')
         package_set.update_package_versions(force=force, preview=preview)
         self.context.console.end_task()
+
+        # save current workspace state
+        self.save_local_workspace_info()
+
         return True
+
+    def get_local_worspace_info_path(self):
+        """ Returns the path to the local workspace info file """
+        return os.path.join(self.root_dir, self.context.local_workspace_info_filename)
+
+    def save_local_workspace_info(self):
+        """ Save the current state of the workspace. This includes information
+            on the mappings of projects into the workspace
+        """
+        local_info = self.__info.clone()
+
+        local_pkg_bindings = []
+        for binding in self.__package_set.get_package_bindings():
+            package = binding.get_package()
+            relpath = os.path.relpath(binding.get_package_root_dir(), self.root_dir)
+            pkg_name = '%s:%s:%s' % (package.provider.source_name, package.name, package.version)
+            local_pkg_bindings.append({
+                'project' : pkg_name,
+                'local_dir' : relpath,
+                'status' : 'unknown'
+                })
+        local_info.set_package_bindings(local_pkg_bindings)
+        local_info.save_to_json_file(self.get_local_worspace_info_path())
+
+    def load_local_workspace_info(self):
+        """ Load the current state of the workspace """
+        path = self.get_local_worspace_info_path()
+        if not os.path.exists(path):
+            return None
+
+        return WorkspaceInfo.create_from_json_file(path)
 
     def verify(self):
         """ Check that the workspace appears to be valid."""     
+        self.context.console.start_task('Verifying workspace')
         for worskpace_file in [self.context.workspace_info_filename]:
             if not os.path.exists(os.path.join(self.root_dir, worskpace_file)):
                 return False
+
+        pkg_status = []
+        
+        workspace_corrupted = False
+
+        # constants for describing current state of workspace packages
+        PkgDoesNotExistInProvider = 1
+        PkgPristine = 2
+        PkgModified = 3
+        PkgCorrupted = 4
+        PkgDoesNotExistLocally = 5
+        PkgIncorrectVerson = 6
+
+        local_info = self.load_local_workspace_info()
+        if local_info:
+            # check that the packages are intact
+            for binding in local_info.get_package_bindings():
+                local_dir = dict_value_or_none(binding, 'local_dir')
+                project = dict_value_or_none(binding, 'project')
+                status = dict_value_or_none(binding, 'status')
+
+                if not local_dir:
+                    workspace_corrupted = True
+                    break
+
+                if not project:
+                    workspace_corrupted = True
+                    break
+
+                # query provider about the status of the package
+                dep = Dependency.create_from_string(project).children[0] 
+                pkg = self.context.package_manager.get_package(dep.source, dep.name, dep.branch)
+
+                if not pkg:
+                    # package does not exist anymore
+                    pkg_status.append([
+                        PkgDoesNotExistInProvider, 
+                        "Package '%s' not longer exists in provider '%s'" % (str(pkg), 
+                                                                             pkg.provider.source_name)
+                        ])  
+                else:                  
+                    local_status = pkg.local_filesystem_status(os.path.join(self.root_dir, local_dir))
+
+                    if not local_status.is_installed():
+                        pkg_status.append([
+                            PkgDoesNotExistLocally,
+                            "Package '%s' is not installed locally" % (str(pkg))
+                            ])
+                    elif not local_status.is_valid():
+                        pkg_status.append([
+                            PkgCorrupted,
+                            "Package '%s' is corrupted locally" % (str(pkg))
+                            ])
+                    elif local_status.is_modified():
+                        pkg_status.append([
+                            PkgModified,
+                            "Package '%s' has been locally modified" % (str(pkg))
+                            ])
+                    elif local_status.get_version() != dep.branch:
+                        pkg_status.append([
+                            PkgIncorrectVerson,
+                            "Package '%s' is using locally using the incorrect version" % (str(pkg))
+                            ])
+                    else:
+                        pkg_status.append([
+                            PkgPristine,
+                            "Package '%s' is in a pristine state" % (str(pkg))
+                            ])
+                            
+        self.context.console.end_task()
+
+        # print report
+        for status in pkg_status:
+            print status[1]
+
         return True
         
     def update_git_ignore_file(self, dependencies):
@@ -252,29 +365,32 @@ class Workspace(object):
         Import a hub project into this workspace. Will interactively query the user for project 
         and branch name and update the workspace dependency file.
         """             
-        # hub = TheHub(self)
+        query_interface = self.context.package_manager.get_aggregated_query_interface()
+        interactive_interface = InteractiveQueryInterface(query_interface)
 
-        # # get existing dependencies     
-        # depends_path = self.get_workspace_info_path()
-        # dep_file = Dependency.create_from_file(depends_path)
-        # if not dep_file:
-        #     return
+        # get existing dependencies     
+        existing_deps = self.__package_set.get_root_dependency()
         
-        # # select repo and branch to import
-        # hub_import = hub.select_import(existing_deps=dep_file)
+        # select project and version to import
+        hub_import = interactive_interface.select_import(existing_deps=existing_deps)
         
-        # if hub_import == None:
-        #     return
+        if hub_import == None:
+            return
         
-        # project = hub_import[0]
-        # branch = hub_import[1]
-        # print ''
-        # print 'Selected %s:%s' % (project.name, branch.name)
+        project = hub_import[0]
+        version = hub_import[1]
+        provider = project.get_owner().get_provider()
+        print ''
+        print 'Selected %s:%s:%s' % (provider.source_name, project.get_display_name(), version.get_display_name())
         
-        # # add to workspace dependency file
-        # print 'Writing ' + depends_path        
-        # dep_file.add_child(Dependency('hub', project.name, branch.name))
-        # dep_file.save_to_file(depends_path)
+        # add to workspace info file
+        info_path = self.get_workspace_info_path()
+        info = WorkspaceInfo.create_from_json_file(info_path)
+        info.add_dependency(Dependency(provider.source_name, 
+                                       project.get_display_name(), 
+                                       version.get_display_name()))
+        print 'Writing ' + info_path        
+        info.save_to_json_file(info_path)
                         
         
     def get_root_dependency(self):
@@ -343,10 +459,10 @@ class Workspace(object):
                                 action_help='Verify that the workspace appears correct')
         
         # foreach action
-        foreach = add_command_line_action(subparsers, 'foreach', 
-                                          action_help='Execute the remainder of the command line' \
-                                                    ' within each dependent library\'s repository')
-        foreach.add_argument('args', nargs=argparse.REMAINDER)
+        #foreach = add_command_line_action(subparsers, 'foreach', 
+        #                                  action_help='Execute the remainder of the command line' \
+        #                                            ' within each dependent library\'s repository')
+        #foreach.add_argument('args', nargs=argparse.REMAINDER)
         
         # show command
         show = add_command_line_action(subparsers, 'show', 

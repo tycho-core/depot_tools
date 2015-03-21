@@ -55,7 +55,7 @@ class Modification(SCMModification):
         """ Returns the git single character code for the code """
         return Modification.__code_to_git_code_map[code]
 
-    __git_status_regex = r'(?P<index>[ MADRCU?!])(?P<local>[ MADRCU?!]) (?P<path>.+)'
+    __git_status_regex = '(?P<index>[ MADRCU?!])(?P<local>[ MADRCU?!]) (?P<path>.+)'
 
     def __init__(self, path, index_code, working_copy_code):
         """ Constructor """
@@ -93,8 +93,8 @@ class Modification(SCMModification):
     def create_from_git_status_line(in_str):
         """ Create from the output of a single line from git status --porcelain """
         match = re.match(Modification.__git_status_regex, in_str)
-        if not match:
-            return None
+        
+        assert match != None
 
         index_code = Modification.code_from_character(match.group('index'))
         wc_code = Modification.code_from_character(match.group('local'))
@@ -106,7 +106,7 @@ class Modification(SCMModification):
     def create_list_from_git_status(text):
         """ Create a list from the output of git status --porcelain """
         result = []
-        lines = text.strip().splitlines()
+        lines = text.splitlines()
         for line in lines:
             mod = Modification.create_from_git_status_line(line)
             result.append(mod)

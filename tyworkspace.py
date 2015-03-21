@@ -67,6 +67,10 @@ class WorkspaceApp(object):
                 print 'Workspace is ok'
             else:
                 print 'Workspace is not ok'
+        elif options.action == 'import':
+            workspace = Workspace(context, context.current_dir, False)
+            workspace.import_project()
+                
         else:
             workspace = Workspace(context, context.current_dir, 
                                   refresh_dependencies=options.refresh)
@@ -78,8 +82,6 @@ class WorkspaceApp(object):
                 workspace.update(options.force, options.preview)
             elif options.action == 'foreach':           
                 workspace.foreach(options.args)
-            elif options.action == 'import':
-                workspace.import_project()
             elif options.action == 'versions':
                 workspace.print_versions()
 

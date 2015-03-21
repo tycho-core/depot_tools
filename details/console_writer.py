@@ -8,6 +8,8 @@
 # Imports
 #-----------------------------------------------------------------------------
 import sys
+import threading
+import time
 
 #-----------------------------------------------------------------------------
 # Class
@@ -21,19 +23,41 @@ class ConsoleWriter(object):
         self.__out = sys.stdout
         self.__cur_task_name = None
         self.__last_line_len = 0
+        self.__activity_thread = None
+        self.__task_status = ''
+        self.__cur_line = ''
+        self.__sub_task_status = ''        
+
+    def shutdown(self):
+        """ Ensure all threads are stopped and output cleared """
+        self.hide_activity()
+        self.__clear_last_line()
 
     def start_task(self, name):
         """ Start a task. This will update the line everytime update_task is called """
         self.write(name)
         self.__cur_task_name = name
+        self.show_activity()
 
     def update_task(self, status):
         """ Update the status of the current task """
-        line = '%s : %s' % (self.__cur_task_name, status)
+        self.hide_activity()
+        line = '%s : %s    ' % (self.__cur_task_name, status)
+        self.__task_status = status
         self.overwrite_line(line)
+        self.show_activity()
+
+    def update_sub_task(self, status):
+        """ Update the sub task of the main task """
+        self.pause_activity()
+        line = '%s : %s : %s    ' % (self.__cur_task_name, self.__task_status, status)
+        self.__sub_task_status = status
+        self.overwrite_line(line)
+        self.resume_activity()
 
     def end_task(self):
         """ End the current task """
+        self.hide_activity()
         self.overwrite_line('%s : done' % (self.__cur_task_name))
         self.__out.write('\n')
         self.__cur_task_name = None
@@ -41,27 +65,219 @@ class ConsoleWriter(object):
     def write(self, line):
         """ Write to the output """
         self.__out.write(line)
+        self.__cur_line = line
         self.__last_line_len += len(line)
 
     def overwrite_line(self, line):
         """ Overwrite the last line written to the output """
-        line_line = self.__last_line_len
-        self.__clear_last_line()        
-        self.write(' ' * line_line)
-        self.__clear_last_line()
-        self.write(line)
+        # find longest matching substring between current and new line so
+        # we can minimise redraw
+
+        # find the matching part if it exists
+        match_len = 0
+        for old_char, new_char in zip(self.__cur_line, line):
+            if old_char == new_char:
+                match_len += 1
+            else:
+                break
+
+        if match_len == 0:
+            self.__clear_last_line()        
+            self.write(line)
+        else:
+            # find the remainder we need to clear if new line is shorter than
+            # the current line
+            padding_len = 0
+            if len(line) < len(self.__cur_line):
+                padding_len = len(self.__cur_line) - len(line)
+
+            # clear from the end of the match to the end of the line
+            self.__out.write(chr(8) * (len(self.__cur_line) - match_len))
+            new_line = line[match_len:] + (' ' * padding_len) + (chr(8) * padding_len)
+            self.__out.write(new_line)            
+
+        self.__cur_line = line
+        self.__last_line_len = len(line)
 
     def write_line(self, line):
         """ Write a single line to the output """
+        self.pause_activity()
+        self.__clear_last_line()
         self.__out.write(line)
         self.__out.write('\n')
-        self.__last_line_len = 0
+        self.write(self.__cur_line)
+        self.resume_activity()
 
     def __clear_last_line(self):
         """ Clear the last line written to the output stream """
+
+        line_line = self.__last_line_len
+        self.__out.write(chr(8) * self.__last_line_len)
+        self.write(' ' * line_line)
         self.__out.write(chr(8) * self.__last_line_len)
         self.__last_line_len = 0
-            
+
+    class ActivityThread(threading.Thread):
+        """ Thread object to show activity indicator """
+
+        class Spinner(object):
+            """ Spinning activity indicator """
+
+            __spinner = ['|', '/', '-', '\\']
+
+            def __init__(self, out_stream):
+                """ Constructor """
+                self.__cur_char = 0
+                self.__first = True
+                self.__out = out_stream
+
+            def update(self):
+                """ Update the spinner """
+                self.cleanup()
+                self.__out.write(' %s' % self.__spinner[self.__cur_char])
+                self.__cur_char += 1
+                if self.__cur_char == len(self.__spinner):
+                    self.__cur_char = 0
+                self.__first = False
+
+            def cleanup(self):
+                """ Cleanup any remaining console output """
+                length = 2
+                bksp = 8
+                if not self.__first:
+                    line = '%s%s%s' % (chr(bksp) * length, ' ' * length, chr(bksp) * length)
+                    self.__out.write(line)
+
+        class Bouncer(object):
+            """ Bouncing ball indicator """
+
+            def __init__(self, out_stream, length):
+                assert length > 2
+
+                self.__out = out_stream
+                self.__background = '|%s|' % ('-' * (length - 2))
+                self.__ball_pos = 1
+                self.__length = length
+                self.__first = True
+                self.__direction = 1
+
+            def update(self):
+                """ Update the ball """
+                if not self.__first:
+                    self.__out.write(chr(8) * self.__length)
+
+                self.__out.write(self.__background[0:self.__ball_pos])
+                self.__out.write('#')
+                self.__out.write(self.__background[self.__ball_pos+1:])
+                self.__first = False
+                self.__ball_pos += self.__direction
+                if self.__ball_pos == self.__length - 2:
+                    self.__direction = -1
+                    self.__ball_pos = self.__length - 2
+                elif self.__ball_pos == 0:
+                    self.__direction = 1
+                    self.__ball_pos = 2
+
+            def cleanup(self):
+                """ Cleanup any remaining console output """
+                if not self.__first:                    
+                    line_len = self.__length
+                    line = '%s%s%s' % (chr(8) * line_len, ' ' * line_len, chr(8) * line_len)
+                    self.__out.write(line)
+                    self.__first = True
+
+        def __init__(self, out_stream):
+            """ Constructor """
+            super(ConsoleWriter.ActivityThread, self).__init__()
+            self.__exit_event = threading.Event()
+            self.__out = out_stream
+            self.__indicator = ConsoleWriter.ActivityThread.Bouncer(out_stream, 12)
+            self.__pause_event = threading.Event()
+            self.__paused_event = threading.Event()
+            self.__resume_event = threading.Event()
+            self.__paused = False
+
+        def run(self):
+            """ Main thread loop """
+
+            activity_freq = 0.05
+            while True:
+                if self.__exit_event.is_set():
+                    # thread quitting
+                    break
+
+                if self.__pause_event.is_set():
+                    # reset the event
+                    self.__pause_event.clear()
+
+                    # clean up any display
+                    self.__indicator.cleanup()
+
+                    # signal the main thread that is safe to proceed
+                    self.__paused_event.set()
+
+                    # wait for the resume event to be fired
+                    self.__resume_event.wait()
+
+                    # and reset it
+                    self.__resume_event.clear()
+
+                self.__indicator.update()
+                time.sleep(activity_freq)
+
+            self.__indicator.cleanup()
+
+
+        def pause(self):
+            """ Pause the thread """
+
+            # set the pause event to halt the update loop
+            self.__pause_event.set()
+
+            # wait for the thread to signal it has entered a paused state before
+            # returning
+            self.__paused_event.wait()
+            self.__paused_event.clear()    
+            self.__paused = True            
+
+        def resume(self):
+            """ Resume the thread """
+            self.__paused = False
+            self.__resume_event.set()
+
+        def cancel(self):
+            """ Stop the activity thread """
+
+            # if paused then resume the main loop before trying to exit
+            if self.__paused:
+                self.resume()
+
+            self.__exit_event.set()
+
+    def show_activity(self):
+        """ Show the activity spinner """
+        assert not self.__activity_thread
+        self.__activity_thread = ConsoleWriter.ActivityThread(self.__out)
+        self.__activity_thread.start()
+
+
+    def hide_activity(self):
+        """" Stop showing the activity spinner """
+        if self.__activity_thread:
+            self.__activity_thread.cancel()
+            self.__activity_thread.join()
+            self.__activity_thread = None
+
+    def pause_activity(self):
+        """ Pause the current activity indicator, preserves its state. """
+        if self.__activity_thread:
+            self.__activity_thread.pause()
+ 
+    def resume_activity(self):
+        """ Resume the activity indicator """
+        if self.__activity_thread:
+            self.__activity_thread.resume()
+
 
 #-----------------------------------------------------------------------------
 # Main

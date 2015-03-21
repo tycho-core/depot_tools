@@ -11,6 +11,8 @@ from details.package.provider_base import ProviderConfig
 import details.package.source.git.provider as GitProvider
 import details.package.source.http.provider as HttpProvider
 from details.package.provider_factory import ProviderFactory
+from details.package.source.git.github_query_interface import GitHubQueryInterface
+from details.package.provider_query_aggregator import ProviderQueryAggregator
 from details.utils.misc import vlog
 
 #-----------------------------------------------------------------------------
@@ -39,13 +41,30 @@ class PackageManager(object):
         self.__provider_factory.add_provider_class('git', GitProvider.Provider)
         self.__provider_factory.add_provider_class('http', HttpProvider.Provider)
  
+        # add provider query interfaces
+        self.__provider_factory.add_provider_query_class('github', GitHubQueryInterface)
+
+        # setup aggregated provider query interface for performaing opertations
+        # on all registered providers
+        self.__provider_query_interface = ProviderQueryAggregator()
+
         # add providers
         for provider in providers:
             config = ProviderConfig(self.__context, provider)
-            self.__provider_factory.add_provider(config.name, config.provider_name, 
-                                                 config.provider_params)
-            vlog('PackageManager : Imported Provider : %s : %s' % 
-                 (config.name, config.provider_name))
+
+            if config.enabled:
+                provider = self.__provider_factory.add_provider(config.name, 
+                                                                config.provider_name, 
+                                                                config.provider_params,
+                                                                config.query_interface_name,
+                                                                config.query_interface_params)
+
+                # register interface to query the provider
+                if provider.get_query_interface():
+                    self.__provider_query_interface.add_query_interface(provider.get_query_interface())
+
+                vlog('PackageManager : Imported Provider : %s : %s' % 
+                     (config.name, config.provider_name))
 
         # package cache
         self.__cache = {}            
@@ -71,6 +90,10 @@ class PackageManager(object):
             Dependency() : Root dependency for this package
         """
         pass            
+
+    def get_aggregated_query_interface(self):
+        """ Get a query interfaces that combines all the individual provider query interfaces. """
+        return self.__provider_query_interface
 
 #-----------------------------------------------------------------------------
 # Main

@@ -127,7 +127,6 @@ class Package(PackageBase):
                     # get git mods and translate to common mods
                     modifications = repo.get_modifications()
 
-
         return PackageBase.Status(installed=installed,
                                   valid=valid,
                                   modified=modified,

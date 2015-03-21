@@ -65,7 +65,6 @@ class WorkspaceMapping(object):
             string : Full path to file if found otherwise None.
         """
         mapped_dir = self.apply_templates(search_dir)
-        print mapped_dir
         for dirpath, _, filenames in os.walk(mapped_dir):
             for filename in filenames:
                 if extensions:

@@ -30,7 +30,7 @@ class TestProvider(TestCase):
         test_params = {
             'host' : TestProvider.__test_host
         }
-        provider = Provider('pkg', self.context, test_params)     
+        provider = Provider('pkg', self.context, test_params, None)     
         self.assertIsNotNone(provider)
         return provider
 

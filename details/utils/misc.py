@@ -109,7 +109,6 @@ def execute(executable, root_dir, args, capture=True):
     cmd.extend(args)
     vlog(cmd)
     vlog(root_dir)
-
     if capture:
         # there is a problem on OS X with Python 2.7.6 where cwd is not being set correctly in
         # the subprocess.Popen call. Manually change to the correct directory before the call
@@ -137,6 +136,24 @@ def execute(executable, root_dir, args, capture=True):
         process.wait()
         return [process.returncode, '', '']
 
+
+def dict_value_or_none(in_dict, name):
+    """ Return value if the key exists or None otherwise """
+    if name in in_dict:
+        return in_dict[name]
+    return None
+
+def dict_or_default(dict):
+    """ Returns the passed dictionary if not None or an empty one if it is """
+    if dict:
+        return dict
+    return {}
+
+def list_or_default(list):
+    """ Returns the passed list if not None or an empty one if it is """
+    if list:
+        return list
+    return {}
 
 #-----------------------------------------------------------------------------
 # Main

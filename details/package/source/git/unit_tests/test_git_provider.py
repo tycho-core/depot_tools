@@ -35,7 +35,7 @@ class TestGitProvider(TestCase):
             'username' : GitConfig.username,
             'password' : GitConfig.password
         }
-        provider = Provider('hub', self.context, test_params)     
+        provider = Provider('hub', self.context, test_params, None)     
         self.assertIsNotNone(provider)
         return provider
 
@@ -45,7 +45,7 @@ class TestGitProvider(TestCase):
         self.assertTrue(provider.is_versioned())
 
         # missing params
-        self.assertRaises(MissingParam, Provider, 'hub', self.context, {})
+        self.assertRaises(MissingParam, Provider, 'hub', self.context, {}, None)
 
     def test_find_package(self):
         # find package tests

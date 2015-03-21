@@ -58,8 +58,15 @@ class ConsoleApp(object):
             try:
                 return_code = self.__app_main_aux()
             except Exception as ex:
-                print ex
+                # ensure the console writer is shutdown and threads stopped                
+                self.context.console.shutdown()
+
+                # print exception and user data
+                print str(ex)
                 self.app.print_error_context()
+                sys.exit(1)
+
+        self.context.console.shutdown()
         sys.exit(return_code)
 
     def __app_main_aux(self):

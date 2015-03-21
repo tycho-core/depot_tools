@@ -66,7 +66,7 @@ class PackageSet(object):
 
     def conflicted_dependencies(self):
         """ Returns conflicted dependencies """
-        return self.__conflicted_dependencies()
+        return self.__conflicted_dependencies
 
     def print_depends(self):
         """ Print dependency chain to stdout """
@@ -108,6 +108,7 @@ class PackageSet(object):
                     else:
                         mods = status.get_modifications()
                         for mod in mods:
+                            assert mod != None
                             log('%s : %s : %s' % (binding.package.name, 
                                                   mod.pretty_code_name(), 
                                                   mod.path()))
@@ -140,13 +141,14 @@ class PackageSet(object):
         Packages that are not in the local workspace with be retrieved.
         Packages that are on the incorrect version will be updated to the correct version"""        
         for binding in self.__package_bindings:
-            package = binding.package
+            package = binding.get_package()
+            console = self.__context.console
 
             # track current dependency for error reporting
             self.__context.current_dependency = package.dependency
 
             # get current package status
-            self.__context.console.update_task('%s : Getting status' % (package.display_name()))
+            console.update_task('%s : Getting status' % (package.display_name()))
             status = binding.local_filesystem_status()
             local_version = status.get_version()
             desired_version = package.version
@@ -155,8 +157,7 @@ class PackageSet(object):
                 if preview:
                     log("%s not installed, would be checked out." % str(package))
                 else:
-                    self.__context.console.update_task('%s : Checking out' % 
-                                                       (package.display_name()))
+                    console.update_task('%s : Checking out' % (package.display_name()))
                     binding.checkout()                    
             elif local_version != desired_version:
                 if preview:
@@ -168,16 +169,15 @@ class PackageSet(object):
                                                                 local_version, 
                                                                 desired_version))
                 else:
+                    console.update_task('%s : Changing version out' % (package.display_name()))
                     if binding.change_version(force=force):
-                        self.__context.console.update_task('%s : Changing version out' % 
-                                                           (package.display_name()))
-                        log("Changed %s from version '%s' to '%s'" % (package.name, 
-                                                                      local_version, 
-                                                                      desired_version))
+                        console.write_line("Changed %s from version '%s' to '%s'" % (package.name, 
+                                                                                     local_version, 
+                                                                                     desired_version))
                     else:
-                        log("Failed to change %s from version '%s' to '%s'" % (package.name, 
-                                                                               local_version, 
-                                                                               desired_version))
+                        console.write_line("Failed to change %s from version '%s' to '%s'" % (package.name, 
+                                                                                              local_version, 
+                                                                                              desired_version))
             # track current dependency for error reporting
             self.__context.current_dependency = None
 

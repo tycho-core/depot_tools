@@ -193,7 +193,7 @@ class Repo(object):
     def get_modifications(self):
         """ Returns:
             scm.Modification[]  : List of modification made to the working copy """
-        exitcode, output, _ = self.execute_git(['status', '--porcelain', '-z'], capture=True)
+        exitcode, output, _ = self.execute_git(['status', '--porcelain'], capture=True)
 
         if exitcode != 0:
             return None

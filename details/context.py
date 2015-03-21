@@ -67,6 +67,9 @@ class Context(object):
         
         # File name of the workspace info file
         self.workspace_info_filename = 'tyworkspace.info'
+
+        # File name of the local workspace info file
+        self.local_workspace_info_filename = 'tyworkspace.info.local'
         
         # Path to where repositories are cached 
         self.repo_cache_path = ('%s/repo_cache/') % self.temp_dir

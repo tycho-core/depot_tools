@@ -24,9 +24,9 @@ import os
 class Provider(ProviderBase):
     """ HttpProvider """
     
-    def __init__(self, name, context, params):
+    def __init__(self, name, context, params, query_interface):
         """ Constructor """
-        super(Provider, self).__init__(name, context, 'http', versioned=False)
+        super(Provider, self).__init__(name, context, 'http', False, query_interface)
 
         # host must be specified
         if not 'host' in params:
@@ -104,15 +104,35 @@ class Provider(ProviderBase):
             if os.path.exists(pkg_dst_file):
                 os.remove(pkg_dst_file)
 
-            futils.download_file(pkg_src_url, pkg_dst_file)
+            class ProgressCallback(object):
+                def __init__(self, console):
+                    self.__console = console
+                    self.__base_name = None
+                    self.__file_size = None
+
+                def started(self, base_name, file_size):
+                    self.__base_name = base_name
+                    self.__file_size = file_size
+                    self.__console.hide_activity()
+
+                def progress(self, file_size_dl):
+                    percent = file_size_dl * 100. / self.__file_size
+                    status = r"Downloading [%3.2f%%] " % (percent)
+                    self.__console.update_sub_task(status)
+
+                def finished(self):
+                    self.__console.update_sub_task('')
+                    self.__console.show_activity()
+                    pass
+
+            futils.download_file(pkg_src_url, pkg_dst_file, ProgressCallback(self.context.console))
                 #raise ProviderException()
 
             # add to cached
             self.__cached_files[pkg_src_url] = pkg_dst_file
             return pkg_dst_file
         except Exception as ex:
-            vlog('Exception : %s' % (str(ex)))
-            raise ProviderException(self, "Failed to cache package '%s'" % str(package))
+            raise ProviderException(self, "Failed to cache package '%s' : %s" % (str(package), str(ex)))
         return None
 
     def __temp_path(self, rel_path):

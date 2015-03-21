@@ -17,11 +17,38 @@ import subprocess
 #-----------------------------------------------------------------------------
 # Utility functions
 #-----------------------------------------------------------------------------  
-def download_file(url=None, file_name=None):
+def download_file(url=None, file_name=None, progress_cb=None):
     """
     Download the specified file over a http connection.
     """
     import urllib2
+
+    class ConsoleCallback(object):
+        """ Default callback that outputs to stdout """
+
+        def __init__(self):
+            """ Constructor """
+            self.__file_size = 0
+
+        def started(self, base_name, file_size):
+            """ Called when downloading starts """
+            self.__file_size = file_size
+            print("Downloading: %s Bytes: %s" % (base_name, file_size))
+            
+        def finished(self):
+            """ Called when downloading ends """
+            clr_str = "                           "
+            sys.stdout.write(clr_str)
+            sys.stdout.write(chr(8)* (len(clr_str)+1))            
+
+        def progress(self, file_size_dl):
+            """ Called when downloading has progresed """
+            status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / self.__file_size)
+            status = status + chr(8)* (len(status)+1)
+            sys.stdout.write(status)
+
+    if not progress_cb:
+        progress_cb = ConsoleCallback()
 
     sha = hashlib.sha1()
     connection = urllib2.urlopen(url)
@@ -29,7 +56,9 @@ def download_file(url=None, file_name=None):
     meta = connection.info()
     file_size = int(meta.getheaders("Content-Length")[0])
     base_name = file_name.split('/')[-1]
-#    print("Downloading: %s Bytes: %s" % (base_name, file_size))
+
+    if progress_cb:
+        progress_cb.started(base_name, file_size)
 
     file_size_dl = 0
     block_sz = 1024 * 128
@@ -41,21 +70,18 @@ def download_file(url=None, file_name=None):
         file_size_dl += len(in_buffer)
         sha.update(in_buffer)
         dest_file.write(in_buffer)
-        status = r"%10d  [%3.2f%%]" % (file_size_dl, file_size_dl * 100. / file_size)
-        status = status + chr(8)* (len(status)+1)
-        sys.stdout.write(status)
-    digest = sha.hexdigest()
+        if progress_cb:
+            progress_cb.progress(file_size_dl)
 
     # clear output 
-    clr_str = "                           "
-    sys.stdout.write(clr_str)
-    sys.stdout.write(chr(8)* (len(clr_str)+1))
-#    print("Complete. SHA = " + str(digest))
+    if progress_cb:
+        progress_cb.finished()
+
     dest_file.close()
     return sha.hexdigest()
 
 def copy_file(bin_dir, src, dst_dir):
-    print("Copying %s -> %s" % (src, dst_dir))
+    #print("Copying %s -> %s" % (src, dst_dir))
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
     dst_path = os.path.join(dst_dir, os.path.basename(src))
@@ -63,7 +89,7 @@ def copy_file(bin_dir, src, dst_dir):
 
 def extract_file(bin_dir, src, dst_dir):
     import zipfile
-    print("Extracting %s -> %s" % (src, dst_dir))
+    #print("Extracting %s -> %s" % (src, dst_dir))
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
@@ -71,9 +97,10 @@ def extract_file(bin_dir, src, dst_dir):
         zip_file.extractall(dst_dir)
 
 def extract_7z_file(exe_path, src, dst_dir):
-    print("Extracting %s -> %s" % (src, dst_dir))
-    cmd = [exe_path, 'x', '-o' + dst_dir, src]
-    process = subprocess.Popen(cmd)
+    #print("Extracting %s -> %s" % (src, dst_dir))
+    cmd = [exe_path, 'x', '-so', '-o' + dst_dir, src]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.communicate()
     process.wait()
     return process.returncode == 0
     

@@ -19,63 +19,67 @@ class ProviderFactory(object):
         """ Raised if a provider of that name already exists """
 
         def __init__(self, name):
-            super(ProviderFactory.ProviderAlreadyExists, self).__init__()
-            self.name = name
+            msg = "Provider '%s' already exists" % (name)
 
-        def __str__(self):
-            return "Provider '%s' already exists" % (self.name)
+            super(ProviderFactory.ProviderAlreadyExists, self).__init__(msg)
 
     class ProviderDoesNotExist(LookupError): 
         """ Raised if a provider of that name does not exist """
 
         def __init__(self, name):
-            super(ProviderFactory.ProviderDoesNotExist, self).__init__()
-            self.name = name
-
-        def __str__(self):
-            return "Provider '%s' does not exist" % (self.name)        
+            msg = "Provider '%s' does not exist" % (name)        
+            super(ProviderFactory.ProviderDoesNotExist, self).__init__(msg)
 
     class ProviderClassAlreadyExists(Exception): 
         """ Raised if a class of that name already exists """
 
         def __init__(self, name):
-            super(ProviderFactory.ProviderClassAlreadyExists, self).__init__()
-            self.name = name
-
-        def __str__(self):
-            return "Provider class '%s' already exists" % (self.name)          
+            msg = "Provider class '%s' already exists" % (name)          
+            super(ProviderFactory.ProviderClassAlreadyExists, self).__init__(msg)
 
     class ProviderClassDoesNotExist(LookupError): 
         """ Raised if a class of that name does not exist """
 
         def __init__(self, name):
-            super(ProviderFactory.ProviderClassDoesNotExist, self).__init__()
-            self.name = name
-
-        def __str__(self):
-            return "Provider class '%s' does not exist" % (self.name)          
+            msg = "Provider class '%s' does not exist" % (name)          
+            super(ProviderFactory.ProviderClassDoesNotExist, self).__init__(msg)
 
     def __init__(self, context):
         """ Constructor """
-        self.context = context
-        self.providers = {}
-        self.provider_classes = {}
+        self.__context = context
+        self.__providers = {}
+        self.__provider_classes = {}
+        self.__provider_query_classes = {}
 
-    def add_provider(self, name, provider_class, provider_params):
+    def add_provider(self, name, provider_class, provider_params, query_interface_name, query_interface_params):
         """ Add a provider source """
-        if name in self.providers:
+        if name in self.__providers:
             raise ProviderFactory.ProviderAlreadyExists(name)
-        if not provider_class in self.provider_classes:
+        if not provider_class in self.__provider_classes:
             raise ProviderFactory.ProviderClassDoesNotExist(name)
 
-        provider = self.provider_classes[provider_class](name, self.context, provider_params)
-        self.providers[name] = provider
+        query_interface = None
+        if query_interface_name and query_interface_params:
+            if not query_interface_name in self.__provider_query_classes:
+                raise ProviderFactory.ProviderClassDoesNotExist(query_interface_name)
+            query_interface = self.__provider_query_classes[query_interface_name](query_interface_params)
+
+        provider = self.__provider_classes[provider_class](name, self.__context, provider_params, query_interface)
+        self.__providers[name] = provider
+
+        return provider
 
     def add_provider_class(self, name, provider_class):
         """ Add a provider class  """
-        if name in self.provider_classes:
+        if name in self.__provider_classes:
             raise ProviderFactory.ProviderClassAlreadyExists(provider_class)
-        self.provider_classes[name] = provider_class            
+        self.__provider_classes[name] = provider_class            
+
+    def add_provider_query_class(self, name, query_class):
+        """ Add a provider query class """
+        if name in self.__provider_query_classes:
+            raise ProviderFactory.ProviderClassAlreadyExists(query_class)
+        self.__provider_query_classes[name] = query_class
 
     def get_provider(self, provider_name):
         """ Lookup up a provider by name. 
@@ -86,9 +90,15 @@ class ProviderFactory(object):
         Throws:
             ProviderDoesNotExist() : If provider does not exist
         """
-        if not provider_name in self.providers:
+        if not provider_name in self.__providers:
             raise ProviderFactory.ProviderDoesNotExist(provider_name)
-        return self.providers[provider_name]
+        return self.__providers[provider_name]
+
+    def get_provider_query_interface(self):
+        """ Returns :
+                ProviderQueryInterface : Interface to query all attached providers 
+        """
+        return self.__provider_query_interface
 
 #-----------------------------------------------------------------------------
 # Main

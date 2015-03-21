@@ -20,13 +20,10 @@ from details.utils.misc import log, vlog, log_banner, indent
 class Dependency(object):
     """ Node in the dependency heirarchy """
 
-    # dependency sources
-    SourceHub = 'hub'
-    SourceLocal = 'local'
-    SourceSandbox = 'sandbox'
-    SourceWorkspace = 'workspace'
+    # identifies the root of the heirarchy
     SourceRoot = 'root'
 
+    # regex for parsing dependency strings
     __regex = r'(?P<src>\w+):(?P<project>\w+):(?P<version>[\w\-\.]+)'
 
     @staticmethod
