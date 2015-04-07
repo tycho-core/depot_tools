@@ -8,9 +8,10 @@
 # Imports
 #-----------------------------------------------------------------------------
 import os
+import sys
 from details.depends import Dependency, print_conflicts
 from details.package.package_binding import PackageBinding
-from details.utils.misc import log, log_banner, vlog
+from details.utils.misc import log, log_banner, vlog, print_table
 
 #-----------------------------------------------------------------------------
 # Class
@@ -88,11 +89,14 @@ class PackageSet(object):
 
         # print summary of status of each package
         log_banner('Dependencies repository state')
+        status_rows = []
         for status, binding in zip(pkg_status, self.__package_bindings):
             mod_str = 'modified'
             if status.is_clean():
                 mod_str = 'unmodified'
-            log('%-16s -> %-10s : %s' % (str(binding.get_package()), status.get_version(), mod_str))
+            status_rows.append([str(binding.get_package()), status.get_version(), mod_str])
+
+        print_table(status_rows, [' -> ', ' : ', ''], sys.stdout)
 
         if detailed:
             all_clean = True

@@ -155,6 +155,30 @@ def list_or_default(list):
         return list
     return {}
 
+def print_table(rows, delimiters, out_stream):
+    if rows == None or len(rows) == 0:
+        return
+
+    num_cols = len(rows[0])
+    
+    # get the maximum width of each of the columns
+    column_widths = []
+    for col_index in range(num_cols):
+        max_width = 0
+        for row in rows:
+            row_len = len(row[col_index])
+            if row_len > max_width:
+                max_width = row_len
+        column_widths.append(max_width)
+
+    for row in rows:
+        for col, max_width, delim in zip(row, column_widths, delimiters):
+            out_stream.write(col)
+            diff = max_width - len(col)
+            out_stream.write(' ' * diff)
+            out_stream.write(delim)
+        out_stream.write('\n')
+                
 #-----------------------------------------------------------------------------
 # Main
 #-----------------------------------------------------------------------------
