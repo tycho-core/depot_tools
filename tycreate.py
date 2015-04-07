@@ -75,7 +75,7 @@ class CreateApp(object):
 
 def main():
     """ Main script entry point """
-    app = ConsoleApp(CreateApp())
+    app = ConsoleApp(CreateApp(), os.path.basename(__file__))
     app.app_main()
             
 if __name__ == "__main__":

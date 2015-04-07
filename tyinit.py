@@ -241,7 +241,7 @@ class InitTools(object):
 
 def script_main():
     """ Mains script entry point """
-    app = ConsoleApp(InitTools())
+    app = ConsoleApp(InitTools(), os.path.basename(__file__))
     app.app_main()
 
 #-----------------------------------------------------------------------------

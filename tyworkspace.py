@@ -14,6 +14,7 @@ Command line tool to manage hub workspaces
 from details.workspace import Workspace
 from details.console_app import ConsoleApp        
 import sys
+import os.path
 
 #-----------------------------------------------------------------------------
 # Main
@@ -87,7 +88,7 @@ class WorkspaceApp(object):
 
 def main():
     """ Main script entry point """
-    app = ConsoleApp(WorkspaceApp())
+    app = ConsoleApp(WorkspaceApp(), os.path.basename(__file__))
     app.app_main()
 
 if __name__ == "__main__":

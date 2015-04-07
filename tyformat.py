@@ -69,7 +69,7 @@ class FormatApp(object):
 
 def main():
     """ Main script entry point """
-    app = ConsoleApp(FormatApp())
+    app = ConsoleApp(FormatApp(), os.path.basename(__file__))
     app.app_main()
 
 if __name__ == "__main__":

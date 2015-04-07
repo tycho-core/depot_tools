@@ -11,6 +11,7 @@ from details.workspace import Workspace
 from details.console_app import ConsoleApp
 from details.package.provider_query_interface import InteractiveQueryInterface
 from details.utils.misc import add_command_line_action
+import os.path
 
 #-----------------------------------------------------------------------------
 # Main
@@ -51,7 +52,7 @@ class HubApp(object):
 
 def main():
     """ Main script entry point """
-    app = ConsoleApp(HubApp())
+    app = ConsoleApp(HubApp(), os.path.basename(__file__))
     app.app_main()
                 
 

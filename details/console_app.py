@@ -21,7 +21,7 @@ from details.utils.misc import vlog, enable_verbose_log
 class ConsoleApp(object):
     """ ConsoleApp """
     
-    def __init__(self, app):
+    def __init__(self, app, app_name):
         """ Constructor """
         self.app = app
 
@@ -30,7 +30,7 @@ class ConsoleApp(object):
         self.description = app.description
 
         # setup command line args
-        self.parser = argparse.ArgumentParser(prog=os.path.basename(__file__))
+        self.parser = argparse.ArgumentParser(prog=app_name)
         self.parser.add_argument('--verbose', '-v', 
                                  action='store_true', 
                                  help='Enable verbose logging')
