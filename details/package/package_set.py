@@ -92,7 +92,7 @@ class PackageSet(object):
             mod_str = 'modified'
             if status.is_clean():
                 mod_str = 'unmodified'
-            log('%-16s -> %-10s : %s' % (str(binding.package), status.get_version(), mod_str))
+            log('%-16s -> %-10s : %s' % (str(binding.get_package()), status.get_version(), mod_str))
 
         if detailed:
             all_clean = True
@@ -103,13 +103,13 @@ class PackageSet(object):
                 if not status.is_clean():
                     log('')
                     if raw:
-                        log_banner(binding.package.name)
+                        log_banner(binding.get_package().name)
                         log(status.get_raw_modifications())
                     else:
                         mods = status.get_modifications()
                         for mod in mods:
                             assert mod != None
-                            log('%s : %s : %s' % (binding.package.name, 
+                            log('%s : %s : %s' % (binding.get_package().name, 
                                                   mod.pretty_code_name(), 
                                                   mod.path()))
                     log('')
