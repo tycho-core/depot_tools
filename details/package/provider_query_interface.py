@@ -70,6 +70,14 @@ class ProviderQueryInterface(object):
         return self.__provider
 
     @abstractmethod
+    def get_display_name(self):
+        """
+        Returns:
+            string : Pretty name of the query interface to display to user
+        """
+        pass
+        
+    @abstractmethod
     def get_projects(self):
         """
         Get a list of all the projects available from this provider.
@@ -112,9 +120,10 @@ class InteractiveQueryInterface(object):
         for project in projects:            
             name = project.get_display_name()
             if existing_deps and existing_deps.project_exists(name):
-                print '* ' + name
+                print '* %s:%s' % (project.get_owner().get_provider().source_name, name)
             else:
-                print name
+                print '%s:%s' % (project.get_owner().get_provider().source_name, name)
+
 
     def pick_project(self, existing_deps=None):
         """

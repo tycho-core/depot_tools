@@ -14,7 +14,7 @@ import glob
 import os.path
 from details.workspace import Workspace
 from details.utils.misc import get_script_dir
-from details.console_app import ConsoleApp
+from details.console_app import ConsoleApp, configure_providers
 
 #-----------------------------------------------------------------------------
 # Class
@@ -34,6 +34,8 @@ class FormatApp(object):
         pass
 
     def app_main(self, context, options):
+        configure_providers(context)
+
         # load the workspace for the depot tools so we can correctly map file paths
         workspace = Workspace(context, os.path.dirname(get_script_dir()))
 

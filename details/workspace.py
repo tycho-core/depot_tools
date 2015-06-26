@@ -47,15 +47,6 @@ class Workspace(object):
 
         context.console.write_line('Initialising workspace')        
 
-        # configure providers
-        context.console.start_task('Configuring providers')
-        provider_file = open(os.path.join(context.config_dir, 'hub-providers.json'), 'r')
-        providers = json.load(provider_file)
-        provider_file.close()
-        self.context.package_manager = PackageManager(self.context, providers)
-        context.console.end_task()
-
-
         # load workspace info file and setup mappings
         self.__info = WorkspaceInfo.create_from_json_file(self.get_workspace_info_path())
 

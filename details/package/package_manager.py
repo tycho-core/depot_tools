@@ -12,6 +12,7 @@ import details.package.source.git.provider as GitProvider
 import details.package.source.http.provider as HttpProvider
 from details.package.provider_factory import ProviderFactory
 from details.package.source.git.github_query_interface import GitHubQueryInterface
+from details.package.source.git.gitlab_query_interface import GitLabQueryInterface
 from details.package.provider_query_aggregator import ProviderQueryAggregator
 from details.utils.misc import vlog
 
@@ -43,6 +44,7 @@ class PackageManager(object):
  
         # add provider query interfaces
         self.__provider_factory.add_provider_query_class('github', GitHubQueryInterface)
+        self.__provider_factory.add_provider_query_class('gitlab', GitLabQueryInterface)
 
         # setup aggregated provider query interface for performaing opertations
         # on all registered providers

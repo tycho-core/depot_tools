@@ -73,6 +73,17 @@ class ConsoleApp(object):
         """ Main entry point for the application """
         return self.app.app_main(self.context, self.options)
 
+def configure_providers(context):
+    import json
+    from details.package.package_manager import PackageManager
+
+    # configure providers
+    context.console.start_task('Configuring providers')
+    provider_file = open(os.path.join(context.config_dir, 'hub-providers.json'), 'r')
+    providers = json.load(provider_file)
+    provider_file.close()
+    context.package_manager = PackageManager(context, providers)
+    context.console.end_task()
 
 #-----------------------------------------------------------------------------
 # Main

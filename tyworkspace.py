@@ -12,7 +12,7 @@ Command line tool to manage hub workspaces
 # Imports
 #-----------------------------------------------------------------------------
 from details.workspace import Workspace
-from details.console_app import ConsoleApp        
+from details.console_app import ConsoleApp, configure_providers
 import sys
 import os.path
 
@@ -49,6 +49,7 @@ class WorkspaceApp(object):
     def app_main(self, context, options):
         """ Main entry point """
         self.__context = context
+        configure_providers(context)
         if options.action == 'init':
             if not Workspace.create_new_workspace(context, context.current_dir):
                 print "Failed to create workspace"

@@ -24,6 +24,13 @@ class ProviderQueryAggregator(ProviderQueryInterface):
         """ Add a query interface """
         self.__interfaces.append(interface)
 
+    def get_display_name(self):
+        """
+        Returns:
+            string : Pretty name of the query interface to display to user
+        """
+        return "Aggregated" 
+
     def get_projects(self):
         """ Returns:
                 list(Project) : List of all projects available from all providers 

@@ -61,12 +61,15 @@ class ConsoleWriter(object):
         self.overwrite_line('%s : done' % (self.__cur_task_name))
         self.__out.write('\n')
         self.__cur_task_name = None
+        self.__cur_line = ''
+        self.__last_line_len = 0
 
     def write(self, line):
         """ Write to the output """
-        self.__out.write(line)
-        self.__cur_line = line
-        self.__last_line_len += len(line)
+        if len(line) > 0:
+            self.__out.write(line)
+            self.__cur_line = line
+            self.__last_line_len += len(line)
 
     def overwrite_line(self, line):
         """ Overwrite the last line written to the output """

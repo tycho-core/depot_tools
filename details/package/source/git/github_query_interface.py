@@ -53,6 +53,13 @@ class GitHubQueryInterface(ProviderQueryInterface):
         self.__base_url = dict_value_or_none(params, 'base_url')
         self.__git_hub = Github(login_or_token=self.__auth_token, base_url=self.__base_url)
             
+    def get_display_name(self):
+        """
+        Returns:
+            string : Pretty name of the query interface to display to user
+        """
+        return "GitLab[%s:%s]" % (self.__org_name, self.__base_url)
+
     def get_projects(self):
         """
         Get a list of all the projects available from this provider.
