@@ -71,7 +71,7 @@ class Package(PackageBase):
 
     def __extract_7zip(self, src, dst):
         """ Extract a 7zip file """
-        path = self.provider.context.filesystem_mappings.find_file('@{wg_hub_bin_tools}/7zip', 
+        path = self.provider.context.filesystem_mappings.find_file('@{ty_hub_bin_tools}/7zip', 
                                                                    '7za', 
                                                                    ['', '.exe'])
         if not path:
