@@ -215,7 +215,12 @@ class InitTools(object):
                 home = expanduser("~")  
                 base_dir = None
                 if sys.platform == 'win32':
-                    base_dir = os.path.join(home, 'Application Data')
+                    # check a coupe of locations to account for OS version changes
+                    app_data_dirs = ['AppData\\Roaming','Application Data']
+                    for ad_dir in app_data_dirs:
+                        abs_ad_dir = os.path.join(home, ad_dir)
+                        if os.path.exists(abs_ad_dir):
+                            base_dir = abs_ad_dir
                 elif sys.platform == 'darwin':
                     base_dir = os.path.join(home, 'Library', 'Application Support')
 
@@ -224,7 +229,8 @@ class InitTools(object):
                     for version in versions:
                         sublime_pkg_dir = os.path.join(base_dir, version, 'Installed Packages')
                         if not os.path.exists(sublime_pkg_dir):
-                            log("Cannot find sublime package directory (%s), is it installed?" % sublime_pkg_dir)
+                            log("Cannot find sublime package directory (%s), is it installed?" % 
+                                sublime_pkg_dir)
                             continue
                         sublime_pkg_path = os.path.join(sublime_pkg_dir, 'ty.sublime-package')
                         shutil.copyfile(out_file, sublime_pkg_path)     
