@@ -14,7 +14,7 @@
 
 	@include("cpp_comment_dashed_line")
 	
-	~@{classname}::@{classname}()
+	@{classname}::~@{classname}()
 	{
 
 	}
