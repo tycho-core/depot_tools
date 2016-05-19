@@ -1,6 +1,6 @@
 @require(year, date)
 @include("py_comment_line")
-# Tycho Library
+# Darkstorm Library
 # Copyright (C) @{year} Martin Slater
 # Created : @{date}
 @include("py_comment_line")
