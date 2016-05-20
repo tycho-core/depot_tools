@@ -17,7 +17,7 @@ import time
 
 class ConsoleWriter(object):
     """ Interface for  writing to the console """
-    
+
     def __init__(self):
         """ Constructor """
         self.__out = sys.stdout
@@ -26,7 +26,16 @@ class ConsoleWriter(object):
         self.__activity_thread = None
         self.__task_status = ''
         self.__cur_line = ''
-        self.__sub_task_status = ''        
+        self.__sub_task_status = ''
+        self.__animate = True
+
+    def enable_animations(self):
+        """ Enable console animations """
+        self.__animate = True
+
+    def disable_animations(self):
+        """ Disbale console animations """
+        self.__animate = False
 
     def shutdown(self):
         """ Ensure all threads are stopped and output cleared """
@@ -85,7 +94,7 @@ class ConsoleWriter(object):
                 break
 
         if match_len == 0:
-            self.__clear_last_line()        
+            self.__clear_last_line()
             self.write(line)
         else:
             # find the remainder we need to clear if new line is shorter than
@@ -97,7 +106,7 @@ class ConsoleWriter(object):
             # clear from the end of the match to the end of the line
             self.__out.write(chr(8) * (len(self.__cur_line) - match_len))
             new_line = line[match_len:] + (' ' * padding_len) + (chr(8) * padding_len)
-            self.__out.write(new_line)            
+            self.__out.write(new_line)
 
         self.__cur_line = line
         self.__last_line_len = len(line)
@@ -183,7 +192,7 @@ class ConsoleWriter(object):
 
             def cleanup(self):
                 """ Cleanup any remaining console output """
-                if not self.__first:                    
+                if not self.__first:
                     line_len = self.__length
                     line = '%s%s%s' % (chr(8) * line_len, ' ' * line_len, chr(8) * line_len)
                     self.__out.write(line)
@@ -240,8 +249,8 @@ class ConsoleWriter(object):
             # wait for the thread to signal it has entered a paused state before
             # returning
             self.__paused_event.wait()
-            self.__paused_event.clear()    
-            self.__paused = True            
+            self.__paused_event.clear()
+            self.__paused = True
 
         def resume(self):
             """ Resume the thread """
@@ -259,9 +268,10 @@ class ConsoleWriter(object):
 
     def show_activity(self):
         """ Show the activity spinner """
-        assert not self.__activity_thread
-        self.__activity_thread = ConsoleWriter.ActivityThread(self.__out)
-        self.__activity_thread.start()
+        if self.__animate:
+            assert not self.__activity_thread
+            self.__activity_thread = ConsoleWriter.ActivityThread(self.__out)
+            self.__activity_thread.start()
 
 
     def hide_activity(self):
@@ -275,7 +285,7 @@ class ConsoleWriter(object):
         """ Pause the current activity indicator, preserves its state. """
         if self.__activity_thread:
             self.__activity_thread.pause()
- 
+
     def resume_activity(self):
         """ Resume the activity indicator """
         if self.__activity_thread:

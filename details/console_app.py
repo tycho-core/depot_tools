@@ -39,11 +39,18 @@ class ConsoleApp(object):
                                  action='store_true', 
                                  help='Enable debugging support')
 
+        self.parser.add_argument('--noanim', '-n', 
+                                 action='store_true', 
+                                 help='Disable console animations')
+
         app.add_command_line_options(self.parser)
         self.parser.description = self.description
         self.options = self.parser.parse_args()        
         self.context.options = self.options 
         
+        if self.options.noanim:
+            self.context.console.disable_animations()
+
         if self.options.verbose:
             self.context.verbose = True
             enable_verbose_log()
