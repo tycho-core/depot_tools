@@ -1,25 +1,23 @@
-function Get-ScriptDirectory
-{
-    $Invocation = (Get-Variable MyInvocation -Scope 1).Value;
-    if($Invocation.PSScriptRoot)
-    {
-        $Invocation.PSScriptRoot;
-    }
-    Elseif($Invocation.MyCommand.Path)
-    {
-        Split-Path $Invocation.MyCommand.Path
-    }
-    else
-    {
-        $Invocation.InvocationName.Substring(0,$Invocation.InvocationName.LastIndexOf("\"));
-    }
-}
-
-$script_dir = Get-ScriptDirectory
+$script_dir = $PSScriptRoot
 $hub_dir = Join-Path $script_dir "\..\"
 Write-Output $hub_dir
-Set-Alias tycreate "$hub_dir\tycreate.py"
-Set-Alias tyhub "$hub_dir\tyhub.py"
-Set-Alias tyworkspace "$hub_dir\tyworkspace.py"
-Set-Alias tyformat "$hub_dir\tyformat.py"
-Set-Alias tyinit "$hub_dir\tyinit.py"
+
+function RunApp
+{
+    param([string]$Script, [string]$Params)
+    echo $args
+    echo "c:\python27\python.exe" $hub_dir$Script $Params
+    & "c:\python27\python.exe" $hub_dir$Script $Params
+}
+
+function TyWorkspaceF { RunApp -script "tyworkspace.py" -params $args }
+function TyCreateF { RunApp -script "tycreate.py" -params $args }
+function TyHubF { RunApp -script "tyhub.py" -params $args }
+function TyFormatF { RunApp -script "tyformat.py" -params $args }
+function TyInitF { RunApp -script "tyinit.py" -params $args }
+
+Set-Alias tycreate TyCreateF
+Set-Alias tyhub TyHubF
+Set-Alias tyworkspace TyWorkspaceF
+Set-Alias tyformat TyFormatF
+Set-Alias tyinit TyInitF

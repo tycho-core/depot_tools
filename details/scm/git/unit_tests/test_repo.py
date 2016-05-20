@@ -31,7 +31,7 @@ class TestGitRepo(TestCase):
         remote_url.username = Config.username
         remote_url.password = Config.password
 
-        return Repo(remote_url, repo_dir)
+        return Repo(self.context, remote_url, repo_dir)
 
     def __make_test_repo(self):        
         return self.__make_test_repo_aux(Config.test_repo_url)

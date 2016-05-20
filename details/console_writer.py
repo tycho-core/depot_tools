@@ -77,6 +77,7 @@ class ConsoleWriter(object):
         """ Write to the output """
         if len(line) > 0:
             self.__out.write(line)
+            self.__out.flush()
             self.__cur_line = line
             self.__last_line_len += len(line)
 

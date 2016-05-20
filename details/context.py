@@ -90,6 +90,9 @@ class Context(object):
         # setup console ouput
         self.console = ConsoleWriter()
 
+        # set to true to prompt user for credentials. 
+        self.prompt_credentials = False
+
         # makes sure temp dir exists
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)

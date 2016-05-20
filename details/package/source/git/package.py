@@ -36,7 +36,7 @@ class Package(PackageBase):
             remote_url.username = provider.username
             remote_url.password = provider.password
 
-        return Repo(remote_url, root_dir=local_dir)
+        return Repo(self.provider.context, remote_url, root_dir=local_dir)
 
     def get_package_info(self, refresh=True):
         """ Returns the info for this package """

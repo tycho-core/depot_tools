@@ -154,15 +154,27 @@ class InteractiveQueryInterface(object):
         for project in projects:            
             print '[%s] %s:%s' % (num_projects, project.get_owner().get_provider().source_name, project.get_display_name())
             num_projects += 1
-                    
+                
+        print ''
+        print '[Q] Quit'    
         print ''
         while True:
             input_ok = True
+            index = -1
+            exit = False
             try:
-                index = int(raw_input('Enter project index : '))
+                ch = raw_input('Enter project index : ')                
+                if ch == "q" or ch == "Q":              
+                    exit = True
+                else:
+                    index = int(ch)
             except:
                 input_ok = False
             
+            if exit:
+                import sys
+                sys.exit()
+
             if index < 0 or index >= num_projects:
                 input_ok = False
                 
@@ -195,6 +207,7 @@ class InteractiveQueryInterface(object):
         print ''
         while True:
             input_ok = True
+            index = -1
             try:
                 index = int(raw_input('Enter version index : '))
             except:

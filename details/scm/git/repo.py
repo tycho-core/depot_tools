@@ -29,10 +29,11 @@ class Repo(object):
     # credentials cache
     credentials_cache = {}
 
-    def __init__(self, remote_url, root_dir=None, anonymous=False):
+    def __init__(self, context, remote_url, root_dir=None, anonymous=False):
         """ Constructor """
         assert remote_url
 
+        self.context = context
         self.root_dir = None
         self.remote_url = remote_url
         self.credentials = {}
@@ -69,7 +70,7 @@ class Repo(object):
     def _set_remote_url_and_credentials(self, remote_url):
         """ Ensure we have credentials if required for the remote host """
         self.remote_url = remote_url
-        if not has_credential_helper() and not self.anonymous and self.remote_url.needs_credentials():
+        if self.context.prompt_credentials and not has_credential_helper() and not self.anonymous and self.remote_url.needs_credentials():
             if not self.remote_url.username or not self.remote_url.password:
                 username, password = Repo.get_credentials(self.remote_url)
                 self.remote_url.username = username

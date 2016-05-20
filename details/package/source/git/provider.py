@@ -126,7 +126,7 @@ class Provider(ProviderBase):
             remote_url.username = self.username
             remote_url.password = self.password
             anonymous = False
-        return Repo(remote_url, local_dir, anonymous=anonymous)
+        return Repo(self.context, remote_url, local_dir, anonymous=anonymous)
 
     @staticmethod
     def __clean_package_repo_cache(cache_dir):
