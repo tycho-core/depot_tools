@@ -71,6 +71,9 @@ class Context(object):
         # File name of the local workspace info file
         self.local_workspace_info_filename = 'tyworkspace.info.local'
         
+        # File name of the workspace cmake file
+        self.local_workspace_cmake_filename = 'tyworkspace.cmake'
+        
         # Path to where repositories are cached 
         self.repo_cache_path = ('%s/repo_cache/') % self.temp_dir
         

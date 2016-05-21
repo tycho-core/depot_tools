@@ -107,10 +107,6 @@ class WorkspaceInfo(object):
         """ Add a depenency to the workspace """
         self.__dependencies.add_child(dep)
 
-    def get_bindings(self):
-        """ Returns:
-                list(PackageBinding) : List of bindings of projects in to the workspace
-        """
     def get_workspace_mappings(self):
         """ Returns:
              string : relative path to map this package into a workspace

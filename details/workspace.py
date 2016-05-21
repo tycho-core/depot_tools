@@ -25,6 +25,7 @@ from details.package.package_manager import PackageManager
 from details.package.package_set import PackageSet
 from details.workspace_info import WorkspaceInfo
 from details.package.provider_query_interface import InteractiveQueryInterface
+from details.processors.cmake_build_processor import CMakeBuildProcessor
 
 #-----------------------------------------------------------------------------
 # Class
@@ -108,6 +109,13 @@ class Workspace(object):
 
         return True
 
+    def get_root_dir(self):
+        """ Get the path to the root of this workspace """
+        return self.root_dir
+
+    def get_filesystem_mappings(self):
+        """ Get the workspace file system mappings """
+        return self.__mappings
 
     def update(self, force=False, preview=False):
         """
@@ -136,6 +144,13 @@ class Workspace(object):
         # update all the packages
         self.context.console.start_task('Updating packages')
         package_set.update_package_versions(force=force, preview=preview)
+        self.context.console.end_task()
+
+        # generate cmake files
+        self.context.console.start_task("Process CMake")
+        cmake = CMakeBuildProcessor(self.context)
+        cmake.process(self, self.__package_set)
+        cmake.write_cmake_file(os.path.join(self.root_dir, self.context.local_workspace_cmake_filename))
         self.context.console.end_task()
 
         # save current workspace state

@@ -17,7 +17,7 @@ from details.depends import Dependency
 class PackageInfo(object):
     """ PackageInfo """
     
-    def __init__(self, deps=None, workspace_mapping=None, options=None):
+    def __init__(self, deps=None, workspace_mapping=None, options=None, build=None):
         """ Constructor """
         if deps:
             self.__dependencies = deps
@@ -34,15 +34,24 @@ class PackageInfo(object):
         else:
             self.__options = {}
             
+        if build:
+            self.__build = build
+        else:
+            self.__build = {}
+
     @staticmethod
     def create_from_json_string(in_str):
         """ Create a PackageInfo object from a json string representation """
         data = json.loads(in_str)
         deps = Dependency.create_from_list(data['dependencies']) 
         options = None
+        build = None
         if 'options' in data:
             options = data['options']
-        return PackageInfo(deps, data['workspace_mapping'], options)
+        if 'build_system' in data:
+            build = data['build_system']
+
+        return PackageInfo(deps, data['workspace_mapping'], options, build)
 
     @staticmethod
     def create_from_json_file(path):
@@ -61,7 +70,8 @@ class PackageInfo(object):
                 str(dep) for dep in self.__dependencies.children
             ],
             'workspace_mapping' : self.__workspace_mapping,
-            'options' : self.__options
+            'options' : self.__options,
+            'build_system'  : self.__build
         }
         json_data = json.dumps(data, indent=4, separators=(',', ': '))
         json_file.write(json_data)
@@ -79,6 +89,17 @@ class PackageInfo(object):
             string : relative path to map this package into a workspace
         """
         return self.__workspace_mapping
+
+    def get_build_system(self, name):
+        """
+            Returns: 
+                dict : dictionary of options for the specified build system
+                       of None if it is not present
+        """
+        if name in self.__build:
+            return self.__build[name]
+
+        return None
 
     def has_option(self, option):
         """ Returns if the info provides the specified option """

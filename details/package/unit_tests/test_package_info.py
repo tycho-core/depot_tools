@@ -31,7 +31,12 @@ class TestPackageInfo(TestCase):
         "dependencies" : [
             "hub:core:v1",
             "sandbox:build:v2"            
-        ]        
+        ],
+        "build" : {
+            "cmake" : {
+                "file" : "CMakeLists.txt"
+            }
+        }
     }
     """
     
@@ -43,9 +48,10 @@ class TestPackageInfo(TestCase):
 
         deps = Dependency.create_root()
         deps.add_child(Dependency.create_root())
-        pkg = PackageInfo(deps=deps, workspace_mapping='./foo')
+        pkg = PackageInfo(deps=deps, workspace_mapping='./foo', options=None, build={'cmake' : {}})
         self.assertEquals(len(pkg.get_dependencies().children), 1)
         self.assertEquals(pkg.get_workspace_mapping(), './foo')
+        self.assertIsNotNone(pkg.get_build_system('cmake'))
 
 
     def __check_test_info(self, pkg):
@@ -59,6 +65,7 @@ class TestPackageInfo(TestCase):
         self.assertEquals(deps.children[1].source, 'sandbox')
         self.assertEquals(deps.children[1].name, 'build')
         self.assertEquals(deps.children[1].branch, 'v2')
+        self.assertIsNotNone(pkg.get_build_system('cmake'))
 
     def test_create_from_json_file(self):
         pass
