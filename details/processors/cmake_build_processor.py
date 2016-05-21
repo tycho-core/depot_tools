@@ -20,7 +20,8 @@ class CMakeBuildProcessor(object):
     def __init__(self, context):
         """ Constructor """
         self.__context = context
-        self.__includes = []
+        self.__dirs = []
+        self.__includes = set()
         self.__inputs = []
 
     @staticmethod
@@ -37,10 +38,12 @@ class CMakeBuildProcessor(object):
     	"""
     	mappings = workspace.get_filesystem_mappings()
     	bindings = package_set.get_package_bindings()
+    	ws_root = workspace.get_root_dir()
     	for bound_pkg in bindings:
     		pkg = bound_pkg.get_package()
     		info = pkg.get_package_info(False)
     		cmake = info.get_build_system('cmake')
+    		self.__dirs.append(CMakeBuildProcessor.__make_cmake_path(bound_pkg.get_package_root_dir(), ws_root))
     		if cmake:
     			for key, val in six.iteritems(cmake):
     				if key == 'inputs':    					
@@ -49,15 +52,14 @@ class CMakeBuildProcessor(object):
     						rel_path = mappings.apply_templates(
     										os.path.join(bound_pkg.get_package_root_dir(), item)) 
     						print(rel_path)
-    						rel_path = CMakeBuildProcessor.__make_cmake_path(rel_path, 
-    							workspace.get_root_dir())
+    						rel_path = CMakeBuildProcessor.__make_cmake_path(rel_path, ws_root)
     						print(rel_path)
     						self.__inputs.append(rel_path)
     				elif key == 'includes':
     					for item in val:    						
-    						rel_path = CMakeBuildProcessor.__make_cmake_path(mappings.apply_templates(item),
-    							workspace.get_root_dir())
-    						self.__includes.append(rel_path)
+    						rel_path = CMakeBuildProcessor.__make_cmake_path(mappings.apply_templates(item), ws_root)
+    						if not rel_path in self.__includes:
+    							self.__includes.add(rel_path)
 
 
     def generate_cmake_file_text(self):
@@ -65,13 +67,18 @@ class CMakeBuildProcessor(object):
     	Generates a string of the CMakeLists.txt file contents
     	"""
     	contents = ""
-    	contents += "cmake_minimum_required (VERSION 2.8)\n\n"
-    	for file in self.__inputs:
-    		contents += "include(\"%s\")\n" % file
+    	contents += "cmake_minimum_required (VERSION 3.1)\n\n"
+
+    	for sdir in self.__dirs:
+			contents += "add_subdirectory(\"%s\")\n" % sdir
+
+    	#contents += "\n"
+    	#for file in self.__inputs:
+    	#	contents += "include(\"%s\")\n" % file
 
     	contents += "\n"
     	for include in self.__includes:
-    		contents += "# " + include + "\n"
+    		contents += "include_directories(\"%s\")\n" % include 
 
     	return contents
 
