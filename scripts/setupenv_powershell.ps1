@@ -4,9 +4,7 @@ Write-Output $hub_dir
 
 function RunApp
 {
-    param([string]$Script, [string]$Params)
-    echo $args
-    echo "c:\python27\python.exe" $hub_dir$Script $Params
+    param([string]$Script, [string[]]$Params)
     & "c:\python27\python.exe" $hub_dir$Script $Params
 }
 
