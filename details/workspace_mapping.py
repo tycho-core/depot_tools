@@ -12,6 +12,7 @@ import six
 from details.templateengine import TemplateEngine
 import details.utils.misc as utils
 import os
+import os.path
 
 #-----------------------------------------------------------------------------
 # Class
@@ -28,7 +29,9 @@ class WorkspaceMapping(object):
         
     def apply_templates(self, path):
         """ Apply templates to the given path and return a absolute path """
-        in_str = '%s%s' % (self.__root_dir, path)
+        in_str = path
+        if not os.path.isabs(path):
+            in_str = '%s%s' % (self.__root_dir, path)
         params = self.__flatten_template_params()
         return self.__template_engine.expand_template_string(params, in_str)
         
