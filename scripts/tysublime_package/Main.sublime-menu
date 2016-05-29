@@ -4,11 +4,14 @@
 		"id": "tycho",
 		"children":
 		[
+			{ "caption": "-" },
 			{ "id": "create_cpp_class",  "command": "ty_create_cppclass", "caption" : "Create C++ Class" },
 			{ "id": "create_cpp_header",  "command": "ty_create_cppheader", "caption" : "Create C++ Header File" },
 			{ "id": "create_cpp_inline",  "command": "ty_create_cppinline", "caption" : "Create C++ Inline File" },
 			{ "id": "create_cpp_source",  "command": "ty_create_cppsource", "caption" : "Create C++ Source File" },
+			{ "id": "create_cpp_lib",  "command": "ty_create_cpplib", "caption" : "Create C++ Library" },
 			{ "caption": "-" },
+			{ "id": "create_py_module",  "command": "ty_create_pymodule", "caption" : "Create Python Module" },
 			{ "id": "create_py_class",  "command": "ty_create_pyclass", "caption" : "Create Python Class" },
 			{ "id": "create_py_unittest",  "command": "ty_create_pyunittest", "caption" : "Create Python unit test" } 
 		]
