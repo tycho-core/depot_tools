@@ -15,14 +15,12 @@ installed for the platform we are running on.
 import os
 import sys
 import shutil
-import argparse
 import details.utils.misc as tyutils
 import details.utils.file as futils
 from details.utils.misc import log, add_command_line_action
 from details.template import Template
 from details.templateengine import TemplateEngine
-from details.context import Context
-from details.console_app import ConsoleApp
+from details.console_app import ConsoleApp, configure_providers
 
 #-----------------------------------------------------------------------------
 # Class
@@ -67,6 +65,7 @@ class InitTools(object):
 
     def install_tools(self):        
         from details.workspace import Workspace
+        configure_providers(self.context)
         workspace = Workspace(self.context, self.context.current_dir)
         workspace.update()
 
