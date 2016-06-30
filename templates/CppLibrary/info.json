@@ -1,6 +1,7 @@
 {
 	"name" : "cpplib",
 	"description" : "Create a new hub C++ library",
+	"target_dir"  : "./@{libname}/",
 	"options" : {
 		"libname" : {
 			"description" : "Name of the library to create"

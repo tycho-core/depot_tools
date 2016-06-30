@@ -52,11 +52,6 @@ class CreateApp(object):
 
     def app_main(self, context, options):   
         """ Application entry point """
-        if options.output == None:
-            options.output = os.getcwd()
-
-        vlog("Output directory : " + options.output)
-
         if options.verbose:
             for template in self.templates:
                 vlog(template.name)
@@ -71,7 +66,30 @@ class CreateApp(object):
                 for key, _ in template.options.iteritems():
                     params[key] = opt_dict[key]
                 engine = TemplateEngine(context)
+
+                output_dir = options.output
+                if output_dir is None:
+                    if template.target_dir is not None:
+                        tengine = TemplateEngine(context)
+                        options.output = tengine.expand_template_string(
+                            params,
+                            template.target_dir)
+                        options.output = os.path.abspath(options.output)
+
+                        # fail if directory already exists
+                        if os.path.exists(options.output):
+                            context.console.write_line(
+                                'Output directory (' + options.output +') already exists')
+                            return 1
+
+
+                    else:
+                        options.output = os.getcwd()
+                
+                vlog("Output directory : " + options.output)
+
                 engine.expand_template(template, params, options.output)
+                return 0
 
 def main():
     """ Main script entry point """

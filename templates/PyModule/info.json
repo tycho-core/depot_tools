@@ -1,6 +1,7 @@
 {
 	"name" : "pymodule",
 	"description" : "Create a new hub Python module",
+	"target_dir" : "./@{modulename}/",
 	"options" : {
 		"modulename" : {
 			"description" : "Name of the module to create"

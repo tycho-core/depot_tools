@@ -25,7 +25,7 @@ class Template(object):
         self.options = {}
         self.source = ''
         self.excluded_files = []
-        
+        self.target_dir = None        
         
     def add_command_line_options(self, parser):
         """ Add a command line option for this template """
@@ -50,7 +50,11 @@ class Template(object):
             new_template.name = template_params['name']
             new_template.description = template_params['description']
             new_template.options = template_params['options']
-            new_template.source = os.path.dirname(path) 
+            new_template.source = os.path.dirname(path)
+
+            if 'target_dir' in template_params:
+                new_template.target_dir = template_params['target_dir']
+
             new_template.excluded_files.append(context.template_info)
             return new_template
         except:
