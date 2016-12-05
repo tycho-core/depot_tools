@@ -1,0 +1,10 @@
+{
+	"name" : "ag-directive",
+	"description" : "Create a new angular directive",
+	"target_dir"  : "./@{name}/",
+	"options" : {
+		"name" : {
+			"description" : "Name of the angular directive to create"
+		}
+	}
+}
