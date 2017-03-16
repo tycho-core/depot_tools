@@ -1,0 +1,7 @@
+@require(libname, header_guard)
+@include("cpp_copyright_comment")
+'use strict';
+
+@def header_content():
+@end
+@header_content()

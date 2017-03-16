@@ -39,7 +39,7 @@ class Context(object):
         self.project_template_dir = 'project_templates'
 
         # Template search directories
-        self.common_template_directories = ['cpp', 'python']
+        self.common_template_directories = ['cpp', 'python', 'js']
         
         # Template search paths
         self.common_template_paths = [

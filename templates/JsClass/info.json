@@ -1,0 +1,9 @@
+{
+	"name" : "jsclass",
+	"description" : "Create a new javscript class.",
+	"options" : {
+		"classname" : {
+			"description" : "Name of the class to create"
+		}
+	}	
+}
