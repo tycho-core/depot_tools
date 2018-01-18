@@ -74,7 +74,7 @@ class WorkspaceApp(object):
             workspace.import_project()
                 
         else:
-            workspace = Workspace(context, context.current_dir, 
+            workspace = Workspace(context, context.current_dir,
                                   refresh_dependencies=options.refresh)
         #    elif options.action == 'clean':
         #       workspace.clean()
@@ -82,7 +82,7 @@ class WorkspaceApp(object):
                 workspace.print_depends(refresh=options.refresh)
             elif options.action == 'update':
                 workspace.update(options.force, options.preview)
-            elif options.action == 'foreach':           
+            elif options.action == 'foreach':
                 workspace.foreach(options.args)
             elif options.action == 'versions':
                 workspace.print_versions()

@@ -71,7 +71,7 @@ class Workspace(object):
         # apply workspace mappings
         mappings.load_templates_from_dict(self.__info.get_workspace_mappings())
 
-        # set on context 
+        # set on context
         self.context.filesystem_mappings = mappings
 
         # bind the packages into the workspace
@@ -119,10 +119,10 @@ class Workspace(object):
 
     def update(self, force=False, preview=False):
         """
-        Update the workspace in the passed directory. This will ensure that all 
+        Update the workspace in the passed directory. This will ensure that all
         dependencies have been retrieved from git and that the .gitignore file is up
         to date.
-        
+
         Args:
             force(Bool): In case of dependency conflict force syncing to first found branch
         """
@@ -275,7 +275,7 @@ class Workspace(object):
     def update_git_ignore_file(self, dependencies):
         """ Update the .gitignore file for this workspace to include all dependencies """     
         path = os.path.join(self.root_dir, '.gitignore')
-        
+
         # read existing file
         gi_file = open(path, 'r')
         lines = gi_file.readlines()
@@ -415,10 +415,10 @@ class Workspace(object):
         add_command_line_action(subparsers, 'init', action_help='Initialize a new workspace')
 
         # update action
-        update = add_command_line_action(subparsers, 'update', 
+        update = add_command_line_action(subparsers, 'update',
                                          action_help='Update all libraries in the workspace')
 
-        update.add_argument('--refresh', '-r', action='store_true', 
+        update.add_argument('--refresh', '-r', action='store_true',
                             help='Refresh dependencies. By default dependent repositories ' \
                                         'are not updated before dependency checking.')   
 
@@ -432,11 +432,11 @@ class Workspace(object):
                                           action_help=
                                           'Show dependency information for this workspace')
 
-        depends.add_argument('--refresh', '-r', action='store_true', 
+        depends.add_argument('--refresh', '-r', action='store_true',
                              help='Refresh dependencies. By default dependent ' \
                              'repositories are not updated before dependency checking.')
 
-        depends.add_argument('--force', '-f', action='store_true', 
+        depends.add_argument('--force', '-f', action='store_true',
                              help='Force updating all dependencies')
 
         # delete action
@@ -456,9 +456,13 @@ class Workspace(object):
         
         
         # versions action
-        add_command_line_action(subparsers, 'versions', 
+        versions = add_command_line_action(subparsers, 'versions',
                                 action_help='Print the projects and versions this' \
                                              ' workspace depends on')
+
+        versions.add_argument('--refresh', '-r', action='store_true',
+                             help='Refresh dependencies. By default dependent ' \
+                             'repositories are not updated before dependency checking.')
 
         # verify action
         add_command_line_action(subparsers, 'verify', 
