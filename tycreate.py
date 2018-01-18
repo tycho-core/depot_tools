@@ -13,6 +13,7 @@ Command line tool to help create hub components (libraries, plugins, etc.)
 #-----------------------------------------------------------------------------
 import argparse
 import os
+import six
 from details.utils.misc import vlog, enable_verbose_log, add_command_line_action
 from details.context import Context
 from details.template import Template
@@ -63,7 +64,7 @@ class CreateApp(object):
         for template in self.templates:
             params = {}
             if options.action == template.name:
-                for key, _ in template.options.iteritems():
+                for key, _ in six.iteritems(template.options):
                     params[key] = opt_dict[key]
                 engine = TemplateEngine(context)
 

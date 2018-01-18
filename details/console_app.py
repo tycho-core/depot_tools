@@ -69,7 +69,7 @@ class ConsoleApp(object):
                 self.context.console.shutdown()
 
                 # print exception and user data
-                print str(ex)
+                print(str(ex))
                 self.app.print_error_context()
                 sys.exit(1)
 

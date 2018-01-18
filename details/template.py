@@ -9,6 +9,7 @@
 #-----------------------------------------------------------------------------
 import json
 import os
+import six
 from details.utils.misc import vlog, log
 
 #-----------------------------------------------------------------------------
@@ -30,7 +31,7 @@ class Template(object):
     def add_command_line_options(self, parser):
         """ Add a command line option for this template """
         first = True
-        for key, val in self.options.iteritems():
+        for key, val in six.iteritems(self.options):
             # first option is positional the rest are flags
             vlog("Option : %s : %s" % (key, val))
             option_name = key           
