@@ -30,10 +30,18 @@ class Template(object):
 
     def to_simple_dict(self):
         """ Convert to a simple dictionary suitable for outputing as json """
+        options = []
+        for key, val in six.iteritems(self.options):
+            new_opt = {}
+            new_opt['name'] = key
+            for key2, val2 in six.iteritems(val):
+                new_opt[key2] = val2
+            options.append(new_opt)
+
         return {
             'name': self.name,
             'description': self.description,
-            'options': self.options
+            'options': options
         }
 
     def add_command_line_options(self, parser):
