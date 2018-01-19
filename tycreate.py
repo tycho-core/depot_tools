@@ -11,10 +11,11 @@ Command line tool to help create hub components (libraries, plugins, etc.)
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
-import argparse
+from __future__ import print_function
 import os
+import json
 import six
-from details.utils.misc import vlog, enable_verbose_log, add_command_line_action
+from details.utils.misc import vlog, add_command_line_action
 from details.context import Context
 from details.template import Template
 from details.templateengine import TemplateEngine
@@ -25,6 +26,7 @@ from details.console_app import ConsoleApp
 #-----------------------------------------------------------------------------
 
 class CreateApp(object):
+    """ tyCreate application """
     description = 'See ? for documentation'
 
     def __init__(self):
@@ -37,28 +39,42 @@ class CreateApp(object):
         pass
 
     def add_command_line_options(self, parser):
+        """ Add command line options for this tool """
         parser.add_argument('--output', '-o', action='store', help='Output directory')
-        
+
         parser.set_defaults(mode='create')
         subparsers = parser.add_subparsers()
-            
+
+        list_parser = add_command_line_action(subparsers,
+                                              'list',
+                                              'List all available templates')
+        list_parser.add_argument('--json', action='store_true', help='Output as json')
+
         # add options for each available template
         for template in self.templates:
-            template_parser = add_command_line_action(subparsers, 
-                                                      template.name, 
+            template_parser = add_command_line_action(subparsers,
+                                                      template.name,
                                                       template.description)
             template_parser.set_defaults(submode=template.name)
-            template.add_command_line_options(template_parser)      
+            template.add_command_line_options(template_parser)
 
-
-    def app_main(self, context, options):   
+    def app_main(self, context, options):
         """ Application entry point """
         if options.verbose:
             for template in self.templates:
                 vlog(template.name)
                 vlog(template.description)
                 vlog(template.options)
-                    
+
+        if options.action == 'list':
+            if options.json:
+                dicts = [template.to_simple_dict() for template in self.templates]
+                print(json.dumps(dicts, indent=4, separators=(',', ': ')))
+            else:
+                for template in self.templates:
+                    print(template.name)
+            return 0
+
         # find the template user wants to expand and expand it
         opt_dict = vars(options)
         for template in self.templates:
@@ -86,7 +102,7 @@ class CreateApp(object):
 
                     else:
                         options.output = os.getcwd()
-                
+
                 vlog("Output directory : " + options.output)
 
                 engine.expand_template(template, params, options.output)
@@ -96,6 +112,6 @@ def main():
     """ Main script entry point """
     app = ConsoleApp(CreateApp(), os.path.basename(__file__))
     app.app_main()
-            
+
 if __name__ == "__main__":
     main()

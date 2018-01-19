@@ -26,20 +26,28 @@ class Template(object):
         self.options = {}
         self.source = ''
         self.excluded_files = []
-        self.target_dir = None        
-        
+        self.target_dir = None
+
+    def to_simple_dict(self):
+        """ Convert to a simple dictionary suitable for outputing as json """
+        return {
+            'name': self.name,
+            'description': self.description,
+            'options': self.options
+        }
+
     def add_command_line_options(self, parser):
         """ Add a command line option for this template """
         first = True
         for key, val in six.iteritems(self.options):
             # first option is positional the rest are flags
             vlog("Option : %s : %s" % (key, val))
-            option_name = key           
+            option_name = key
             if not first:
                 option_name = '--' + key
             parser.add_argument(option_name, action='store', help=val['description'])
             first = False
-                            
+
     @staticmethod
     def load_from_file(context, path):
         """ Load a template from a file """
@@ -61,7 +69,7 @@ class Template(object):
         except:
             return None
 
-    @staticmethod           
+    @staticmethod
     def get_available_templates(context, src_dir):
         """ Returns :
                 list(Template) : List of all templates found in the passed directory.
@@ -74,12 +82,12 @@ class Template(object):
                 if os.path.normcase(path) != os.path.normcase(context.common_template_path):
                     info_path = os.path.join(path, context.template_info)
                     info = Template.load_from_file(context, info_path)
-                    if info == None:
+                    if info is None:
                         log("Failed to load template " + info_path)
-                    else:                       
+                    else:
                         templates.append(info)
-        
-        return templates            
+
+        return templates
 
 #-----------------------------------------------------------------------------
 # Main
