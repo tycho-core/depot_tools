@@ -10,13 +10,12 @@
 import json
 import datetime
 import uuid
-import string
-import six
 import os
+import six
 from wheezy.template.engine import Engine
 from wheezy.template.ext.core import CoreExtension
 from wheezy.template.loader import FileLoader, DictLoader
-from details.utils.misc import log, vlog
+from details.utils.misc import vlog
 from details.utils.file import get_directory_tree
 
 #-----------------------------------------------------------------------------
@@ -25,24 +24,24 @@ from details.utils.file import get_directory_tree
 
 class TemplateEngine(object):
     """ TemplateEngine """
-    
+
     def __init__(self, context):
         """ Constructor """
         self.context = context
-            
+
     def __make_header_guard(self, name):
         name = "_%s_%s" % (name.upper(), uuid.uuid4())
         name = name.replace(".", "_")
         name = name.replace("-", "_")
         return name.upper()
-        
+
     def __make_default_params(self):
         params = {}
-        now = datetime.datetime.now()           
+        now = datetime.datetime.now()
         params['year'] = datetime.datetime.strftime(now, "%Y")
         params['date'] = datetime.datetime.strftime(now, "%A, %d %B %Y %I:%M:%S %p")
         return params
-    
+
     def __get_global_params(self):
         if os.path.exists(self.context.global_options_path):
             global_params_file = open(self.context.global_options_path)
@@ -60,24 +59,24 @@ class TemplateEngine(object):
             bool : True if directory is within a project
         """
         return self.__get_project_params_path(dir) != None
-    
-    def __get_project_params_path(self, dir):
+
+    def __get_project_params_path(self, directory):
         # search up the tree from the passed directory looking for project options file
-        while not os.path.exists(os.path.join(dir, self.context.project_options_name)):     
-            nextdir = os.path.dirname(dir)
-            vlog('Search : %s\\%s' % (dir, self.context.project_options_name))
-            if dir == nextdir:
+        while not os.path.exists(os.path.join(directory, self.context.project_options_name)):
+            nextdir = os.path.dirname(directory)
+            vlog('Search : %s\\%s' % (directory, self.context.project_options_name))
+            if directory == nextdir:
                 return None
-            dir = nextdir
-    
-        path = os.path.join(dir, self.context.project_options_name)
+            directory = nextdir
+
+        path = os.path.join(directory, self.context.project_options_name)
         if os.path.exists(path):
             return path
 
         return None
 
-    def __get_project_template_path(self, dir):
-        path = self.__get_project_params_path(dir)
+    def __get_project_template_path(self, directory):
+        path = self.__get_project_params_path(directory)
         if path:
             path = os.path.dirname(path)
             path = os.path.join(path, self.context.project_template_dir)
@@ -86,16 +85,16 @@ class TemplateEngine(object):
 
         return None
 
-    def __get_project_params(self, dir):
-        path = self.__get_project_params_path(dir)
+    def __get_project_params(self, directory):
+        path = self.__get_project_params_path(directory)
         if path:
             params_file = open(path)
             params = json.load(params_file)
             params_file.close()
-            return params       
-        
+            return params
+
         return {}
-    
+
     def __apply_template_file(self, params, input_path, in_search_paths):
         # add file directory to search paths
         search_paths = []
@@ -106,18 +105,18 @@ class TemplateEngine(object):
         vlog('Default search path : ' + str(in_search_paths))
         vlog('Search path : ' + str(search_paths))
         vlog(params)
-        engine = Engine(                
+        engine = Engine(
             loader=FileLoader(search_paths),
             extensions=[CoreExtension()]
-        )       
+        )
         template_name = os.path.basename(input_path)
         vlog('Loading template ' + template_name)
         template = engine.get_template(template_name)
-        
+
         vlog('Rendering')
         output = template.render(params)
         return output
-    
+
     def __apply_template_string(self, params, input_string):
         # automatically require all params
         require_string = "@require("
@@ -128,22 +127,22 @@ class TemplateEngine(object):
             require_string = require_string + key
             first = False
         require_string = require_string + ")\n"
-        
+
         input_string = require_string + input_string
-        
+
         # set template engine
         template_dict = {'input_string' : input_string}
-        engine = Engine(                
+        engine = Engine(
             loader=DictLoader(template_dict),
             extensions=[CoreExtension()]
-        )       
+        )
         template = engine.get_template('input_string')
         output = template.render(params)
         return output
-        
+
     @staticmethod
     def __make_camel_case(in_str):
-        """ Transform an underscore delimted string to camel case 
+        """ Transform an underscore delimted string to camel case
         i.e.  this_string -> ThisString """
         out_str = ''
         camel_me = False
@@ -164,24 +163,24 @@ class TemplateEngine(object):
 
     def expand_template_string(self, params, input_string):
         return self.__apply_template_string(params, input_string)
-        
-    def expand_template(self, template, inparams, output_dir):  
+
+    def expand_template(self, template, inparams, output_dir):
         # setup default template parameters
         params = self.__make_default_params()
-        
+
         # class specific params
         for key, val in six.iteritems(inparams):
             params[key] = val
             params[key + '_upper'] = val.upper()
             params[key + '_camel'] = TemplateEngine.__make_camel_case(val)
-        
+
         # load global template parameters
         params.update(self.__get_global_params())
 
-        # template search paths. intialised here as we need to add per project directory to the 
+        # template search paths. intialised here as we need to add per project directory to the
         # head of the list
         default_search_paths = []
-        
+
         # check whether we are in a project and configure per project settings
         if self.is_project_dir(output_dir):
             # load project template parameters
@@ -192,45 +191,45 @@ class TemplateEngine(object):
 
         # add default search paths at the end
         default_search_paths.extend(self.context.common_template_paths)
-        
+
         vlog(params)
-        
+
         # get list of all files in the library template directory
         template_list = get_directory_tree(template.source).flatten()
-        
+
         # iterate over all files and expand templates into new location
-        for input_file in template_list:          
+        for input_file in template_list:
             vlog('Processing ' + input_file.absolute_path)
-    
+
             # check to see if this file is in the excluded list
             if input_file.base_name in template.excluded_files:
                 continue
-            
+
             # apply templates to filename
-            output_name = self.__apply_template_string(params, 
+            output_name = self.__apply_template_string(params,
                                                        os.path.basename(input_file.relative_path))
-            
-            # apply templates to file   
-            params['header_guard'] = self.__make_header_guard(output_name)      
-            output = self.__apply_template_file(params, input_file.absolute_path, 
+
+            # apply templates to file
+            params['header_guard'] = self.__make_header_guard(output_name)
+            output = self.__apply_template_file(params, input_file.absolute_path,
                                                 default_search_paths)
-            
+
             # save to new location
             dest_path = os.path.join(output_dir, input_file.relative_path)
             dest_path = os.path.join(os.path.dirname(dest_path), output_name)
             dest_dir = os.path.dirname(dest_path)
-            
+
             # ensure destination directory exists
             if not os.path.exists(dest_dir):
                 os.makedirs(dest_dir)
-            vlog('Writing output to ' + dest_path)              
+            vlog('Writing output to ' + dest_path)
             out_file = open(dest_path, 'w+')
             out_file.write(output)
             out_file.close()
-            
-        
+
+
         return True
-    
+
 #-----------------------------------------------------------------------------
 # Main
 #-----------------------------------------------------------------------------
