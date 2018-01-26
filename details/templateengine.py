@@ -197,6 +197,9 @@ class TemplateEngine(object):
         # get list of all files in the library template directory
         template_list = get_directory_tree(template.source).flatten()
 
+        # keep track of all files we have created
+        dest_paths = []
+
         # iterate over all files and expand templates into new location
         for input_file in template_list:
             vlog('Processing ' + input_file.absolute_path)
@@ -227,8 +230,9 @@ class TemplateEngine(object):
             out_file.write(output)
             out_file.close()
 
+            dest_paths.append(dest_path)
 
-        return True
+        return dest_paths
 
 #-----------------------------------------------------------------------------
 # Main

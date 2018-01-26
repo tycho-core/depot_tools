@@ -41,7 +41,7 @@ class CreateApp(object):
     def add_command_line_options(self, parser):
         """ Add command line options for this tool """
         parser.add_argument('--output', '-o', action='store', help='Output directory')
-
+        parser.add_argument('--json', '-j', action='store_true', help='Output processing information in json format')
         parser.set_defaults(mode='create')
         subparsers = parser.add_subparsers()
 
@@ -58,6 +58,11 @@ class CreateApp(object):
             template_parser.set_defaults(submode=template.name)
             template.add_command_line_options(template_parser)
 
+    @staticmethod
+    def to_json_string(obj):
+        """ Create a formatted json string from the passed object """
+        return json.dumps(obj, indent=4, separators=(',', ': '))
+
     def app_main(self, context, options):
         """ Application entry point """
         if options.verbose:
@@ -69,7 +74,7 @@ class CreateApp(object):
         if options.action == 'list':
             if options.json:
                 dicts = [template.to_simple_dict() for template in self.templates]
-                print(json.dumps(dicts, indent=4, separators=(',', ': ')))
+                context.console.write_line(CreateApp.to_json_string(dicts))
             else:
                 for template in self.templates:
                     print(template.name)
@@ -95,8 +100,15 @@ class CreateApp(object):
 
                         # fail if directory already exists
                         if os.path.exists(options.output):
-                            context.console.write_line(
-                                'Output directory (' + options.output +') already exists')
+                            err_msg = 'Output directory (' + options.output +') already exists'
+                            if options.json:
+                                json_obj = {
+                                    'created_files': [],
+                                    'error' : err_msg
+                                }
+                                context.console.write_line(CreateApp.to_json_string(json_obj))
+                            else:
+                                context.console.write_line(err_msg)
                             return 1
 
 
@@ -105,7 +117,15 @@ class CreateApp(object):
 
                 vlog("Output directory : " + options.output)
 
-                engine.expand_template(template, params, options.output)
+                created_files = engine.expand_template(template, params, options.output)
+
+                if options.json:
+                    # output json summary for consumption by external caller programs.
+                    json_obj = {
+                        'created_files': created_files,
+                        'error' : ''
+                    }
+                    context.console.write_line(CreateApp.to_json_string(json_obj))
                 return 0
 
 def main():
