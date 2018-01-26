@@ -43,7 +43,7 @@ class Context(object):
         
         # Template search paths
         self.common_template_paths = [
-            os.path.abspath(os.path.join(self.common_template_path, tdir)) 
+            os.path.abspath(os.path.join(self.common_template_path, tdir))
             for tdir in self.common_template_directories
             ]
 

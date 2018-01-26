@@ -40,9 +40,9 @@ class InitTools(object):
         self.depot_dir = None
         self.tools_dir = None
 
-    def print_error_context(self):
+    def get_error_context(self):
         """ Override to print extra error information when an exception is caught """
-        pass
+        return ""
         
     def add_command_line_options(self, parser):
         subparsers = parser.add_subparsers()

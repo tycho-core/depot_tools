@@ -13,7 +13,6 @@ Command line tool to help create hub components (libraries, plugins, etc.)
 #-----------------------------------------------------------------------------
 from __future__ import print_function
 import os
-import json
 import six
 from details.utils.misc import vlog, add_command_line_action
 from details.context import Context
@@ -34,14 +33,13 @@ class CreateApp(object):
         context = Context()
         self.templates = Template.get_available_templates(context, context.template_path)
 
-    def print_error_context(self):
+    def get_error_context(self):
         """ Override to print extra error information when an exception is caught """
-        pass
+        return ""
 
     def add_command_line_options(self, parser):
         """ Add command line options for this tool """
         parser.add_argument('--output', '-o', action='store', help='Output directory')
-        parser.add_argument('--json', '-j', action='store_true', help='Output processing information in json format')
         parser.set_defaults(mode='create')
         subparsers = parser.add_subparsers()
 
@@ -58,11 +56,6 @@ class CreateApp(object):
             template_parser.set_defaults(submode=template.name)
             template.add_command_line_options(template_parser)
 
-    @staticmethod
-    def to_json_string(obj):
-        """ Create a formatted json string from the passed object """
-        return json.dumps(obj, indent=4, separators=(',', ': '))
-
     def app_main(self, context, options):
         """ Application entry point """
         if options.verbose:
@@ -74,7 +67,7 @@ class CreateApp(object):
         if options.action == 'list':
             if options.json:
                 dicts = [template.to_simple_dict() for template in self.templates]
-                context.console.write_line(CreateApp.to_json_string(dicts))
+                context.console.write_line(ConsoleApp.to_json_string(dicts))
             else:
                 for template in self.templates:
                     print(template.name)
@@ -101,12 +94,12 @@ class CreateApp(object):
                         # fail if directory already exists
                         if os.path.exists(options.output):
                             err_msg = 'Output directory (' + options.output +') already exists'
-                            if options.json:
+                            if options.machine:
                                 json_obj = {
                                     'created_files': [],
                                     'error' : err_msg
                                 }
-                                context.console.write_line(CreateApp.to_json_string(json_obj))
+                                context.console.write_line(ConsoleApp.to_json_string(json_obj))
                             else:
                                 context.console.write_line(err_msg)
                             return 1
@@ -117,15 +110,26 @@ class CreateApp(object):
 
                 vlog("Output directory : " + options.output)
 
-                created_files = engine.expand_template(template, params, options.output)
+                created_files = []
+                try:
+                    engine.expand_template(template, params, options.output)
+                except KeyError as ex:
+                    msg = "Parameter not found {0}".format(str(ex))
+                    if options.machine:
+                        context.console.write_line(ConsoleApp.to_json_string({
+                            "error": msg
+                        }))
+                    else:
+                        context.console.write_line(msg)
+                    return 1
 
-                if options.json:
+                if options.machine:
                     # output json summary for consumption by external caller programs.
                     json_obj = {
                         'created_files': created_files,
                         'error' : ''
                     }
-                    context.console.write_line(CreateApp.to_json_string(json_obj))
+                    context.console.write_line(ConsoleApp.to_json_string(json_obj))
                 return 0
 
 def main():

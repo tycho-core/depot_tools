@@ -30,19 +30,19 @@ class WorkspaceApp(object):
     def add_command_line_options(self, parser):
         Workspace.add_command_line_options(parser)
 
-    def print_error_context(self):
+    def get_error_context(self):
         """ Override to print extra error information when an exception is caught """
         if self.__context.current_dependency:
             chain = self.__context.current_dependency.get_dependency_chain()
             chain_len = len(chain)
             cur_dep = 0
-            print ''
+            info = ''
             for link in chain:
-                sys.stdout.write(str(link))
+                info = info + str(link)
                 if cur_dep < chain_len -1:
-                    sys.stdout.write(' -> ')
+                    info = info + ' -> '
                 cur_dep += 1
-            print ''
+            return info
 
 
 

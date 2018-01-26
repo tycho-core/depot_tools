@@ -29,9 +29,9 @@ class FormatApp(object):
         parser.add_argument('input_file_patterns', action='store', 
                             help='Input filename for file to format', nargs="+")
 
-    def print_error_context(self):
+    def get_error_context(self):
         """ Override to print extra error information when an exception is caught """
-        pass
+        return ""
 
     def app_main(self, context, options):
         configure_providers(context)

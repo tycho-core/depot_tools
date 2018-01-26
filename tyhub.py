@@ -35,9 +35,9 @@ class HubApp(object):
         parser.add_argument('--sandbox', '-r', action='store_true', help=sb_help)
         parser.add_argument('--nodeps', '-n', action='store_true', help=nd_help)
 
-    def print_error_context(self):
+    def get_error_context(self):
         """ Override to print extra error information when an exception is caught """
-        pass
+        return ""
         
     def app_main(self, context, options):
         configure_providers(context)

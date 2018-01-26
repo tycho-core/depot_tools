@@ -11,6 +11,7 @@
 import sys
 import argparse
 import os.path
+import json
 from details.context import Context
 from details.utils.misc import vlog, enable_verbose_log
 
@@ -20,7 +21,12 @@ from details.utils.misc import vlog, enable_verbose_log
 
 class ConsoleApp(object):
     """ ConsoleApp """
-    
+
+    @staticmethod
+    def to_json_string(obj):
+        """ Create a formatted json string from the passed object """
+        return json.dumps(obj, indent=4, separators=(',', ': '))
+
     def __init__(self, app, app_name):
         """ Constructor """
         self.app = app
@@ -35,20 +41,24 @@ class ConsoleApp(object):
                                  action='store_true', 
                                  help='Enable verbose logging')
 
-        self.parser.add_argument('--debug', '-d', 
-                                 action='store_true', 
+        self.parser.add_argument('--debug', '-d',
+                                 action='store_true',
                                  help='Enable debugging support')
 
-        self.parser.add_argument('--noanim', '-n', 
-                                 action='store_true', 
+        self.parser.add_argument('--noanim', '-n',
+                                 action='store_true',
                                  help='Disable console animations')
+
+        self.parser.add_argument('--machine', '-m',
+                                 action='store_true',
+                                 help='We are being called by another program, output will be to stdout in json format.')
 
         app.add_command_line_options(self.parser)
         self.parser.description = self.description
         self.options = self.parser.parse_args()        
         self.context.options = self.options 
-        
-        if self.options.noanim:
+
+        if self.options.noanim or self.options.machine:
             self.context.console.disable_animations()
 
         if self.options.verbose:
@@ -69,8 +79,16 @@ class ConsoleApp(object):
                 self.context.console.shutdown()
 
                 # print exception and user data
-                print(str(ex))
-                self.app.print_error_context()
+                msg = str(type(ex)) + str(ex)
+                extra = self.app.get_error_context()
+                if extra:
+                    msg = msg + extra
+                if self.options.machine:
+                    print(ConsoleApp.to_json_string({
+                        "error": msg
+                    }))
+                else:
+                    print(msg)
                 sys.exit(1)
 
         self.context.console.shutdown()
