@@ -112,7 +112,7 @@ class CreateApp(object):
 
                 created_files = []
                 try:
-                    engine.expand_template(template, params, options.output)
+                    created_files = engine.expand_template(template, params, options.output)
                 except KeyError as ex:
                     msg = "Parameter not found {0}".format(str(ex))
                     if options.machine:
