@@ -53,6 +53,10 @@ class ConsoleApp(object):
                                  action='store_true',
                                  help='We are being called by another program, output will be to stdout in json format.')
 
+        self.parser.add_argument('--quiet', '-q',
+                                 action='store_true',
+                                 help='Supress informational messages from being displayed')
+
         app.add_command_line_options(self.parser)
         self.parser.description = self.description
         self.options = self.parser.parse_args()        
@@ -60,6 +64,9 @@ class ConsoleApp(object):
 
         if self.options.noanim or self.options.machine:
             self.context.console.disable_animations()
+
+        if self.options.quiet:
+            self.context.console.disable_task_info()
 
         if self.options.verbose:
             self.context.verbose = True
@@ -79,10 +86,10 @@ class ConsoleApp(object):
                 self.context.console.shutdown()
 
                 # print exception and user data
-                msg = str(type(ex)) + str(ex)
+                msg = str(ex)
                 extra = self.app.get_error_context()
                 if extra:
-                    msg = msg + extra
+                    msg = msg + ' : ' + extra
                 if self.options.machine:
                     print(ConsoleApp.to_json_string({
                         "error": msg

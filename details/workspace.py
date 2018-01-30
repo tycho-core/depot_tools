@@ -46,7 +46,8 @@ class Workspace(object):
         self.__mappings = None
         self.__info = None
 
-        context.console.write_line('Initialising workspace')        
+        if not context.options.quiet:
+            context.console.write_line('Initialising workspace')
 
         # load workspace info file and setup mappings
         self.__info = WorkspaceInfo.create_from_json_file(self.get_workspace_info_path())

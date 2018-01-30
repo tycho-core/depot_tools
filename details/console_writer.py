@@ -28,6 +28,7 @@ class ConsoleWriter(object):
         self.__cur_line = ''
         self.__sub_task_status = ''
         self.__animate = True
+        self.__show_task_info = True
 
     def enable_animations(self):
         """ Enable console animations """
@@ -37,6 +38,14 @@ class ConsoleWriter(object):
         """ Disable console animations """
         self.__animate = False
 
+    def disable_task_info(self):
+        """ Disable outputing task progress informatin """
+        self.__show_task_info = False
+
+    def enable_task_info(self):
+        """ Enable outputing task progress informatin """
+        self.__show_task_info = True
+
     def shutdown(self):
         """ Ensure all threads are stopped and output cleared """
         self.hide_activity()
@@ -44,34 +53,38 @@ class ConsoleWriter(object):
 
     def start_task(self, name):
         """ Start a task. This will update the line everytime update_task is called """
-        self.write(name)
-        self.__cur_task_name = name
-        self.show_activity()
+        if self.__show_task_info:
+            self.write(name)
+            self.__cur_task_name = name
+            self.show_activity()
 
     def update_task(self, status):
         """ Update the status of the current task """
-        self.hide_activity()
-        line = '%s : %s    ' % (self.__cur_task_name, status)
-        self.__task_status = status
-        self.overwrite_line(line)
-        self.show_activity()
+        if self.__show_task_info:
+            self.hide_activity()
+            line = '%s : %s    ' % (self.__cur_task_name, status)
+            self.__task_status = status
+            self.overwrite_line(line)
+            self.show_activity()
 
     def update_sub_task(self, status):
         """ Update the sub task of the main task """
-        self.pause_activity()
-        line = '%s : %s : %s    ' % (self.__cur_task_name, self.__task_status, status)
-        self.__sub_task_status = status
-        self.overwrite_line(line)
-        self.resume_activity()
+        if self.__show_task_info:
+            self.pause_activity()
+            line = '%s : %s : %s    ' % (self.__cur_task_name, self.__task_status, status)
+            self.__sub_task_status = status
+            self.overwrite_line(line)
+            self.resume_activity()
 
     def end_task(self):
         """ End the current task """
-        self.hide_activity()
-        self.overwrite_line('%s : done' % (self.__cur_task_name))
-        self.__out.write('\n')
-        self.__cur_task_name = None
-        self.__cur_line = ''
-        self.__last_line_len = 0
+        if self.__show_task_info:
+            self.hide_activity()
+            self.overwrite_line('%s : done' % (self.__cur_task_name))
+            self.__out.write('\n')
+            self.__cur_task_name = None
+            self.__cur_line = ''
+            self.__last_line_len = 0
 
     def write(self, line):
         """ Write to the output """
