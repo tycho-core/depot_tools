@@ -34,7 +34,7 @@ class ConsoleWriter(object):
         self.__animate = True
 
     def disable_animations(self):
-        """ Disbale console animations """
+        """ Disable console animations """
         self.__animate = False
 
     def shutdown(self):
@@ -83,9 +83,13 @@ class ConsoleWriter(object):
 
     def overwrite_line(self, line):
         """ Overwrite the last line written to the output """
+
+        if not self.__animate:
+            self.write('\n' + line);
+            return
+
         # find longest matching substring between current and new line so
         # we can minimise redraw
-
         # find the matching part if it exists
         match_len = 0
         for old_char, new_char in zip(self.__cur_line, line):
@@ -124,11 +128,14 @@ class ConsoleWriter(object):
     def __clear_last_line(self):
         """ Clear the last line written to the output stream """
 
-        line_line = self.__last_line_len
-        self.__out.write(chr(8) * self.__last_line_len)
-        self.write(' ' * line_line)
-        self.__out.write(chr(8) * self.__last_line_len)
-        self.__last_line_len = 0
+        if not self.__animate:
+            self.write('\n')
+        else:
+            line_line = self.__last_line_len
+            self.__out.write(chr(8) * self.__last_line_len)
+            self.write(' ' * line_line)
+            self.__out.write(chr(8) * self.__last_line_len)
+            self.__last_line_len = 0
 
     class ActivityThread(threading.Thread):
         """ Thread object to show activity indicator """
