@@ -7,6 +7,7 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from threading import Thread
 from details.package.provider_base import ProviderConfig
 import details.package.source.git.provider as GitProvider
 import details.package.source.http.provider as HttpProvider
@@ -33,6 +34,22 @@ class PackageManager(object):
         """ Thrown when a package provider cannot be found """
         pass
 
+    class ProviderRegisterThread(object):
+        """ Object used to register a provider intended to be called from
+        multiple threads """
+        def __init__(self, config, factory):
+            self.provider = None
+            self.factory = factory
+            self.config = config
+
+        def run(self):
+            """ Thread function """
+            self.provider = self.factory.load_provider(self.config.name,
+                                                      self.config.provider_name,
+                                                      self.config.provider_params,
+                                                      self.config.query_interface_name,
+                                                      self.config.query_interface_params)
+
     def __init__(self, context, providers):
         self.__context = context
         # setup providers
@@ -50,26 +67,34 @@ class PackageManager(object):
         # on all registered providers
         self.__provider_query_interface = ProviderQueryAggregator()
 
-        # add providers
+        # load all providers in multiple threads as they can take some time to initialise and retrieve
+        # remote available projects
+        threads = []
         for provider in providers:
             config = ProviderConfig(self.__context, provider)
 
             if config.enabled:
-                provider = self.__provider_factory.add_provider(config.name, 
-                                                                config.provider_name, 
-                                                                config.provider_params,
-                                                                config.query_interface_name,
-                                                                config.query_interface_params)
+                runner = PackageManager.ProviderRegisterThread(config, self.__provider_factory)
+                thread = Thread(target=runner.run)
+                threads.append((thread, runner, config))
+                thread.start()
 
-                # register interface to query the provider
-                if provider.get_query_interface():
-                    self.__provider_query_interface.add_query_interface(provider.get_query_interface())
+        # wait for them all to complete
+        for thread in threads:
+            thread[0].join()
 
-                vlog('PackageManager : Imported Provider : %s : %s' % 
-                     (config.name, config.provider_name))
+            # register interface to query the provider
+            provider = thread[1].provider
+            config = thread[2]
+            self.__provider_factory.register_provider(config.name, config.provider_name, provider)
+            if provider.get_query_interface():
+                self.__provider_query_interface.add_query_interface(provider.get_query_interface())
+
+            vlog('PackageManager : Imported Provider : %s : %s' %
+                    (config.name, config.provider_name))
 
         # package cache
-        self.__cache = {}            
+        self.__cache = {}
             
     def get_package(self, provider_name, pkg_name, pkg_version, refresh=True):
         """ Get a package from the specified provider """

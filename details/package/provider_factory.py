@@ -51,23 +51,25 @@ class ProviderFactory(object):
         self.__provider_classes = {}
         self.__provider_query_classes = {}
 
-    def add_provider(self, name, provider_class, provider_params, query_interface_name, query_interface_params):
-        """ Add a provider source """
-        if name in self.__providers:
-            raise ProviderFactory.ProviderAlreadyExists(name)
-        if not provider_class in self.__provider_classes:
-            raise ProviderFactory.ProviderClassDoesNotExist(name)
-
+    def load_provider(self, name, provider_class, provider_params, query_interface_name, query_interface_params):
+        """ Load a provider source """
         query_interface = None
         if query_interface_name and query_interface_params:
             if not query_interface_name in self.__provider_query_classes:
                 raise ProviderFactory.ProviderClassDoesNotExist(query_interface_name)
             query_interface = self.__provider_query_classes[query_interface_name](query_interface_params)
 
-        provider = self.__provider_classes[provider_class](name, self.__context, provider_params, query_interface)
+        return self.__provider_classes[provider_class](name, self.__context, provider_params, query_interface)
+
+
+    def register_provider(self, name, provider_class, provider):
+        """ Register a provider source previously loaded with load_provider """
+        if name in self.__providers:
+            raise ProviderFactory.ProviderAlreadyExists(name)
+        if not provider_class in self.__provider_classes:
+            raise ProviderFactory.ProviderClassDoesNotExist(name)
         self.__providers[name] = provider
 
-        return provider
 
     def add_provider_class(self, name, provider_class):
         """ Add a provider class  """
