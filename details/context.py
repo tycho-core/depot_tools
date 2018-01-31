@@ -40,7 +40,7 @@ class Context(object):
 
         # Template search directories
         self.common_template_directories = ['cpp', 'python', 'js']
-        
+
         # Template search paths
         self.common_template_paths = [
             os.path.abspath(os.path.join(self.common_template_path, tdir))
@@ -49,51 +49,51 @@ class Context(object):
 
         # Template description file name
         self.template_info = 'info.json'
-        
+
         # Path to global libary options file
         self.global_options_path = os.path.join(self.template_path, 'global_options.json')
 
         # Name of project options file
         self.project_options_name = 'project_options.json'
-        
+
         # Path to default workspace layout
         self.workspace_layout_path = os.path.join(self.template_path, 'Workspace')
-        
+
         # Path where libraries are cached when performing dependency checks etc.
         self.library_cache_path = ('%s/libCache') % self.temp_dir
-        
+
         # File name of package info file
         self.package_info_filename = 'typackage.info'
-        
+
         # File name of the workspace info file
         self.workspace_info_filename = 'tyworkspace.info'
 
         # File name of the local workspace info file
         self.local_workspace_info_filename = 'tyworkspace.info.local'
-        
+
         # File name of the workspace cmake file
         self.local_workspace_cmake_filename = 'tyworkspace.cmake'
-        
-        # Path to where repositories are cached 
+
+        # Path to where repositories are cached
         self.repo_cache_path = ('%s/repo_cache/') % self.temp_dir
-        
-        # True for detailed logging 
+
+        # True for detailed logging
         self.verbose = False
-        
+
         # Command line options we were run with
         self.options = None
 
         # Mapping to use when mapping packages in to workspace
         self.filesystem_mappings = None
 
-        # Current dependency being processed or none if not in this phase. 
+        # Current dependency being processed or none if not in this phase.
         # This is used for error reporting
-        self.current_dependency = None 
+        self.current_dependency = None
 
         # setup console ouput
         self.console = ConsoleWriter()
 
-        # set to true to prompt user for credentials. 
+        # set to true to prompt user for credentials.
         self.prompt_credentials = False
 
         # makes sure temp dir exists

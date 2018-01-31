@@ -50,7 +50,7 @@ class ProviderQueryAggregator(ProviderQueryInterface):
         Returns:
             list(VersionBase) : List of available versions for the given project
         """     
-        return project.get_versions()            
+        return project.get_versions()
 
 
 #-----------------------------------------------------------------------------

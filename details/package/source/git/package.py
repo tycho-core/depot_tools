@@ -7,12 +7,11 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+import os
 from details.package.package_base import PackageBase
 from details.scm.git.repo import Repo
-from details.utils.url import Url
 from details.utils.misc import log, vlog
 from details.package.provider_base import PackageNotFound
-import os
 
 #-----------------------------------------------------------------------------
 # Class
@@ -62,7 +61,7 @@ class Package(PackageBase):
         os.makedirs(local_dir)
         if not repo.clone_branch(self.version):
             log('  Failed : Could not checkout')
-            raise PackageNotFound(self, self.provider, self.name, 
+            raise PackageNotFound(self.provider, self.name,
                                   self.version, "Could not be checked out")
         return True
 
@@ -90,12 +89,12 @@ class Package(PackageBase):
                         log("Failed to stash modifications to %s" % local_dir)
                         return False
                     else:
-                        log("Stashed modifications to %s" % local_dir)                        
+                        log("Stashed modifications to %s" % local_dir)
                 else:
                     return False
             if switch:
                 return repo.switch_branch(self.version)
-        return True                    
+        return True
 
     def local_filesystem_status(self, local_dir):
         """ Returns the status of the local package """

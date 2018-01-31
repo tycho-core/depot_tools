@@ -115,9 +115,9 @@ class InteractiveQueryInterface(object):
 
         Args:
             existing_deps(list(depends.Dependency)) : List of existing dependencies or None
-        """        
+        """
         projects = self.__query_interface.get_projects()
-        for project in projects:            
+        for project in projects:
             name = project.get_display_name()
             if existing_deps and existing_deps.project_exists(name):
                 print '* %s:%s' % (project.get_owner().get_provider().source_name, name)
@@ -139,7 +139,7 @@ class InteractiveQueryInterface(object):
         # prune out existing repos
         all_projects = self.__query_interface.get_projects()        
         projects = []
-        if existing_deps == None:
+        if existing_deps is None:
             projects = all_projects
         else:
             for project  in all_projects:
@@ -200,7 +200,7 @@ class InteractiveQueryInterface(object):
         versions = project.get_versions()
         
         num_versions = 0
-        for version in versions:            
+        for version in versions:
             print '[%s] %s:%s' % (num_versions, project.get_display_name(), version.get_display_name())
             num_versions += 1
                     
