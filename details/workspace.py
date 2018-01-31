@@ -366,39 +366,62 @@ class Workspace(object):
             if not status.is_installed():
                 status_msg = "<missing>"
             log("%s : %s" % (binding.display_name(), status_msg))
-                
+
+    def get_available_imports(self):
+        """
+        Get a list of all projects available to import from the hub
+        """
+        query_interface = self.context.package_manager.get_aggregated_query_interface()
+        projects = query_interface.get_projects()
+        existing_deps = self.__package_set.get_root_dependency()
+        results = []
+        for project in projects:
+            pdict = {}
+            pdict['provider'] = project.get_owner().get_provider().source_name
+            pdict['name'] = project.get_display_name()
+            pdict['existing'] = existing_deps.project_exists(project.get_display_name())
+            pdict['versions'] = [ version.get_display_name() for version in project.get_versions()]
+            results.append(pdict)
+
+        return results
+
+    def import_project_by_name(self, provider, name, version):
+        """ Import a project by name to the workspace """
+        # add to workspace info file
+        info_path = self.get_workspace_info_path()
+        info = WorkspaceInfo.create_from_json_file(info_path)
+        info.add_dependency(Dependency(provider, name, version))
+        if not self.context.options.quiet:
+            self.context.console.write_line('Writing ' + info_path)
+        info.save_to_json_file(info_path)
+
     def import_project(self):
         """
-        Import a hub project into this workspace. Will interactively query the user for project 
+        Import a hub project into this workspace. Will interactively query the user for project
         and branch name and update the workspace dependency file.
         """             
         query_interface = self.context.package_manager.get_aggregated_query_interface()
         interactive_interface = InteractiveQueryInterface(query_interface)
 
-        # get existing dependencies     
+        # get existing dependencies
         existing_deps = self.__package_set.get_root_dependency()
-        
+
         # select project and version to import
         hub_import = interactive_interface.select_import(existing_deps=existing_deps)
-        
-        if hub_import == None:
+
+        if hub_import is None:
             return
-        
+
         project = hub_import[0]
         version = hub_import[1]
         provider = project.get_owner().get_provider()
-        print ''
-        print 'Selected %s:%s:%s' % (provider.source_name, project.get_display_name(), version.get_display_name())
-        
+        self.context.console.write_line('Selected %s:%s:%s' % (provider.source_name, project.get_display_name(), version.get_display_name()))
+
         # add to workspace info file
-        info_path = self.get_workspace_info_path()
-        info = WorkspaceInfo.create_from_json_file(info_path)
-        info.add_dependency(Dependency(provider.source_name, 
-                                       project.get_display_name(), 
-                                       version.get_display_name()))
-        print 'Writing ' + info_path        
-        info.save_to_json_file(info_path)
-                        
+        self.import_project_by_name(provider.source_name,
+                                    project.get_display_name(),
+                                    version.get_display_name())
+
         
     def get_root_dependency(self):
         """ Get the projects this workspace depends on """
@@ -447,7 +470,7 @@ class Workspace(object):
         status = add_command_line_action(subparsers, 'status', 
                                          action_help=
                                          'Show status of all repositories in the workspace')
-        status.add_argument('--detailed', '-d', 
+        status.add_argument('--detailed', '-d',
                             action='store_true', 
                             help='Show detailed status of all repositories in the workspace')
         status.add_argument('--raw', '-r', 
@@ -481,18 +504,23 @@ class Workspace(object):
                                        'Use \'tyworkspace.py show -h\' for more options')
 
         show_subparsers = show.add_subparsers()
-        add_command_line_action(show_subparsers, 'branches', 
-                                action_help='Show which branches are currently in the workspace', 
-                                subaction=True)     
-        
+        add_command_line_action(show_subparsers, 'branches',
+                                action_help='Show which branches are currently in the workspace',
+                                subaction=True)
+        add_command_line_action(show_subparsers, 'imports',
+                                action_help='Show which imports are available for the workspace',
+                                subaction=True)
+
         # import command
-        imp = add_command_line_action(subparsers, 'import', 
+        imp = add_command_line_action(subparsers, 'import',
                                       action_help='Import a project into the current workspace')
-        imp.add_argument('--sandbox', '-r', 
-                         action='store_true', help='Include sandbox libraries in the output')                
+        imp.add_argument('--sandbox', '-r',
+                         action='store_true', help='Include sandbox libraries in the output')
+        imp.add_argument('--project', '-p',
+                         action='store', help='Project to import in <provider>:<name>:<version> format')
 
 
-            
+
 
 #-----------------------------------------------------------------------------
 # Main

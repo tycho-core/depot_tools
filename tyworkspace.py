@@ -62,7 +62,21 @@ class WorkspaceApp(object):
         elif options.action == 'show':
             workspace = Workspace(context, context.current_dir, False)
             if options.subaction == 'branches':
-                workspace.show_branches()            
+                workspace.show_branches()
+            elif options.subaction == 'imports':
+                imports = workspace.get_available_imports()
+                if options.machine:
+                    json_obj = {
+                        'error': '',
+                        'imports': imports
+                    }
+                    context.console.write_line(ConsoleApp.to_json_string(json_obj))
+                else:
+                    for imp in imports:
+                        msg = '%s:%s' % (imp['provider'], imp['name'])
+                        if imp['existing']:
+                            msg = '* ' + msg
+                        context.console.write_line(msg)
         elif options.action == 'verify':
             workspace = Workspace(context, context.current_dir, False)
             if workspace.verify():
@@ -71,8 +85,13 @@ class WorkspaceApp(object):
                 print 'Workspace is not ok'
         elif options.action == 'import':
             workspace = Workspace(context, context.current_dir, False)
-            workspace.import_project()
-                
+
+            if options.project is not None:
+                provider, project, version = options.project.split(':')
+                workspace.import_project_by_name(provider, project, version)
+            else:
+                workspace.import_project()
+
         else:
             workspace = Workspace(context, context.current_dir,
                                   refresh_dependencies=options.refresh)
