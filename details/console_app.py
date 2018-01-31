@@ -8,6 +8,7 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from __future__ import print_function
 import sys
 import argparse
 import os.path
@@ -59,10 +60,17 @@ class ConsoleApp(object):
 
         app.add_command_line_options(self.parser)
         self.parser.description = self.description
-        self.options = self.parser.parse_args()        
-        self.context.options = self.options 
+        self.options = self.parser.parse_args()
+        self.context.options = self.options
 
-        if self.options.noanim or self.options.machine:
+        if self.options.debug:
+            self.options.noanim = True
+
+        if self.options.machine:
+            self.options.noanim = True
+            self.options.quiet = True
+
+        if self.options.noanim:
             self.context.console.disable_animations()
 
         if self.options.quiet:
@@ -72,7 +80,7 @@ class ConsoleApp(object):
             self.context.verbose = True
             enable_verbose_log()
             vlog(self.options)
-            
+
     def app_main(self):
         """ Main entry point for the application """
         return_code = 1
@@ -82,7 +90,7 @@ class ConsoleApp(object):
             try:
                 return_code = self.__app_main_aux()
             except Exception as ex:
-                # ensure the console writer is shutdown and threads stopped                
+                # ensure the console writer is shutdown and threads stopped
                 self.context.console.shutdown()
 
                 # print exception and user data
@@ -106,7 +114,6 @@ class ConsoleApp(object):
         return self.app.app_main(self.context, self.options)
 
 def configure_providers(context):
-    import json
     from details.package.package_manager import PackageManager
 
     # configure providers
