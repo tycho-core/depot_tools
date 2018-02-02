@@ -139,7 +139,7 @@ class Repo(object):
     def is_valid_remote_branch(self, branch_name):
         """ Check that the URL points to a valid remote repository and that the branch exists """
         self._set_remote_url_and_credentials(self.remote_url)
-        exit_code, refs_str, _ = self.execute_git(['ls-remote', str(self.remote_url)], 
+        exit_code, refs_str, _ = self.execute_git(['ls-remote', str(self.remote_url)],
                                                   capture=True)
         if exit_code != 0:
             return False
