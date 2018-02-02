@@ -11,6 +11,7 @@ Command line tool to manage hub workspaces
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from __future__ import print_function
 from details.workspace import Workspace
 from details.console_app import ConsoleApp, configure_providers
 import sys
@@ -52,7 +53,7 @@ class WorkspaceApp(object):
         configure_providers(context)
         if options.action == 'init':
             if not Workspace.create_new_workspace(context, context.current_dir):
-                print "Failed to create workspace"
+                print("Failed to create workspace")
             else:
                 workspace = Workspace(context, context.current_dir)
                 workspace.update()
@@ -80,9 +81,9 @@ class WorkspaceApp(object):
         elif options.action == 'verify':
             workspace = Workspace(context, context.current_dir, False)
             if workspace.verify():
-                print 'Workspace is ok'
+                print('Workspace is ok')
             else:
-                print 'Workspace is not ok'
+                print('Workspace is not ok')
         elif options.action == 'import':
             workspace = Workspace(context, context.current_dir, False)
 
@@ -98,7 +99,14 @@ class WorkspaceApp(object):
         #    elif options.action == 'clean':
         #       workspace.clean()
             if options.action == 'depends':
-                workspace.print_depends(refresh=options.refresh)
+                if options.machine:
+                    json_obj = {
+                        'error': '',
+                        'info': workspace.get_depends_info()
+                    }
+                    context.console.write_line(ConsoleApp.to_json_string(json_obj))
+                else:
+                    workspace.print_depends(refresh=options.refresh)
             elif options.action == 'update':
                 workspace.update(options.force, options.preview)
             elif options.action == 'foreach':

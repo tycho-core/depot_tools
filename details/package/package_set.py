@@ -69,6 +69,10 @@ class PackageSet(object):
         """ Returns conflicted dependencies """
         return self.__conflicted_dependencies
 
+    def get_depends_info(self):
+        """ Get dependency chain information """
+        return self.__root_dependency.get_depends_info()
+
     def print_depends(self):
         """ Print dependency chain to stdout """
         self.__root_dependency.print_depends()

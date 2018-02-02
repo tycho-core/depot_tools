@@ -337,7 +337,12 @@ class Workspace(object):
         for binding in self.__package_set.get_package_bindings():
             print('%-16s -> %s' % (binding.display_name(), 
                                    binding.local_filesystem_status().get_version()))
-        
+
+
+    def get_depends_info(self):
+        """ Get dependency information in simple structure suitable for
+        dumping as json """
+        return self.__package_set.get_depends_info()
 
     def print_depends(self, refresh=False):
         """
@@ -345,10 +350,10 @@ class Workspace(object):
             List of all dependent projects and which branch they use
             Dependency graph
             Dependency conflicts if they exist
-        
+
         Args:
             refresh(Bool) : True to refresh dependencies from the network (this may be slow)
-        """     
+        """
         # build dependency graph and check for conflicts
         self.__package_set.print_depends()
 

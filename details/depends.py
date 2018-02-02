@@ -4,9 +4,13 @@
 # Created : Wednesday, 10 December 2014 10:28:08 AM
 #-----------------------------------------------------------------------------
 
+#TODO : rewrite print_depends using get_depends_info results
+#TODO : add conflict information to get_depends_info results
+
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from __future__ import print_function
 import os
 import re
 import sys
@@ -197,7 +201,7 @@ class Dependency(object):
         for node in self.children:
             self.__flatten_dependencies_aux(name_dict, node)
         return name_dict
-            
+
     
     def flatten_dependencies(self):
         """
@@ -285,11 +289,11 @@ class Dependency(object):
         
         Args:
             refresh(Bool)  : True to refresh dependencies from the network (this may be slow)
-        """     
+        """
         # build dependency graph and check for conflicts
         flattened_deps = self.flatten_dependencies_by_name()
         conflicted_deps = self.get_dependency_conflicts()
-        
+
         
         # print list of all dependent projects
         log_banner('Dependent projects')
@@ -299,15 +303,15 @@ class Dependency(object):
             for ref in refs:
                 if not ref in visited_deps:
                     if len(visited_deps) > 0:
-                        branches = branches + ", "                          
+                        branches = branches + ", "
                     branches = branches + str(ref)
                     visited_deps.add(ref)
-            log('%-16s : %s' % (project, branches))                     
+            log('%-16s : %s' % (project, branches))
 
         log('')
         log_banner('Dependency graph')
         self.print_dependencies()
-        
+
         if len(conflicted_deps) > 0:
             log('')
             log_banner('Conflicts')
@@ -318,21 +322,77 @@ class Dependency(object):
             msg = 'NOT OK - %s conflicted ' % (num_conflicts)
             if num_conflicts == 1:
                 msg = msg + "dependency"
-            else:       
+            else:
                 msg = msg + "dependencies"
             log(msg)
         else:
             log('')
             log('OK - Conflict free dependencies')
-    
+
+    def get_depends_info(self):
+        """
+        Builds a simple structure containg dependency information suitable for dumping to json or printing. This includes.
+            List of all dependent projects and which branch they use
+            Dependency graph
+            Dependency conflicts if they exist
+        """
+        output = {}
+
+        # build dependency graph and check for conflicts
+        flattened_deps = self.flatten_dependencies_by_name()
+        conflicted_deps = self.get_dependency_conflicts()
+
+        # get list of all dependent projects and the branches referenced
+        output['depends'] = []
+        for project, refs in flattened_deps.iteritems():
+            visited_deps = set()
+            branches = []
+            for ref in refs:
+                if not ref in visited_deps:
+                    branches.append(str(ref))
+                    visited_deps.add(ref)
+            output['depends'].append({
+                'name': str(project),
+                'branches': branches
+            })
+
+        def enum_deps(parent, node):
+            for child in node.children:
+                entry = {
+                    'source': child.source,
+                    'name': child.name,
+                    'branch': child.branch,
+                    'children': []
+                }
+                parent['children'].append(entry)
+                enum_deps(entry, child)
+
+        output['graph'] = {
+            'source': self.source,
+            'name': self.name,
+            'branch': self.branch,
+            'children': []
+        }
+        enum_deps(output['graph'], self)
+
+        output['conflicts'] = {
+            'num': len(conflicted_deps),
+            'entries': []
+        }
+#        if len(conflicted_deps) > 0:
+#            print_conflicts(conflicted_deps)
+
+        return output
+
+
     def build_dependency_graph(self, refresh=False, depth=0, dep_func=None):
         """
         Build the dependency graph for this dependency. This will burrow through all
         dependencies to create the full dependency graph for this dependency.
-            
+
         Args:
             refresh(Bool) : True to update dependency info from the network.
-            
+
         Returns:
              depends.Dependency() object
         """
@@ -343,11 +403,11 @@ class Dependency(object):
             new_deps = dep_func(cur_child)
 
             for new_child in new_deps.children:
-                cur_child.add_child(new_child) 
+                cur_child.add_child(new_child)
                 vlog('Adding child(%s) to parent(%s)' % (new_child, cur_child), tabs=depth)
 
             cur_child.build_dependency_graph(refresh=refresh, depth=depth+1, dep_func=dep_func)
-            
+
         return self
 
 #-----------------------------------------------------------------------------
@@ -370,9 +430,9 @@ def print_conflicts(conflicted_deps):
                 else:
                     projects = projects + ', '
                     branches = branches + ', '
-            branches = branches + ref.branch 
+            branches = branches + ref.branch
 
-            if ref.parent.source == Dependency.SourceWorkspace:
+            if ref.parent.source == Dependency.SourceRoot:
                 projects = projects + 'the workspace'
             else:
                 projects = projects + ref.parent.name + ':' + ref.parent.branch
@@ -391,13 +451,13 @@ def print_conflicts(conflicted_deps):
                 if dep == ref:
                     tail = "   <---- Using branch " + dep.branch
 
-                if dep.source == Dependency.SourceWorkspace:
+                if dep.source == Dependency.SourceRoot:
                     log('Workspace')
                 else:
                     log("%s:%s%s" % (dep.name, dep.branch, tail))
                 depth = depth + 1
             log('')
-    
+
 #-----------------------------------------------------------------------------
 # Main
 #-----------------------------------------------------------------------------
