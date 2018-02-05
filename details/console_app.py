@@ -13,6 +13,9 @@ import sys
 import argparse
 import os.path
 import json
+import cProfile
+import StringIO
+import pstats
 from details.context import Context
 from details.utils.misc import vlog, enable_verbose_log
 
@@ -57,6 +60,10 @@ class ConsoleApp(object):
         self.parser.add_argument('--quiet', '-q',
                                  action='store_true',
                                  help='Supress informational messages from being displayed')
+
+        self.parser.add_argument('--profile', '-p',
+                                 action='store_true',
+                                 help='Output profiling information to stderr after the command has run')
 
         app.add_command_line_options(self.parser)
         self.parser.description = self.description
@@ -111,7 +118,24 @@ class ConsoleApp(object):
 
     def __app_main_aux(self):
         """ Main entry point for the application """
-        return self.app.app_main(self.context, self.options)
+        pr = None
+        if self.options.profile:
+            pr = cProfile.Profile()
+            pr.enable()
+
+        res  = self.app.app_main(self.context, self.options)
+
+        if self.options.profile:
+            pr.disable()
+            s = StringIO.StringIO()
+            sortby = 'cumulative'
+            ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+            ps.print_stats()
+            sys.stderr.write(s.getvalue())
+            with open('output.cprof', 'wt+') as prof:
+                prof.write(s.getvalue());
+
+        return res
 
 def configure_providers(context):
     from details.package.package_manager import PackageManager
