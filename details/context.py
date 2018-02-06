@@ -10,6 +10,7 @@
 import os
 import details.utils.misc as utils
 import details.utils.file as futils
+from details.cache import Cache
 from details.console_writer import ConsoleWriter
 
 #-----------------------------------------------------------------------------
@@ -92,6 +93,9 @@ class Context(object):
 
         # set to true to prompt user for credentials.
         self.prompt_credentials = False
+
+        # setup caching service
+        self.cache = Cache(self)
 
         # makes sure temp dir exists
         if not os.path.exists(self.temp_dir):

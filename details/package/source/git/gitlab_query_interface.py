@@ -8,8 +8,11 @@
 # Imports
 #-----------------------------------------------------------------------------
 from details.package.provider_query_interface import ProviderQueryInterface, ProjectBase, VersionBase
-from details.utils.misc import dict_value_or_none
+from details.utils.misc import dict_value_or_none, dict_value_or_default
+from os import makedirs
 import gitlab
+import os.path as path
+import json
 
 #-----------------------------------------------------------------------------
 # Class
@@ -18,7 +21,7 @@ import gitlab
 class GitLabQueryInterface(ProviderQueryInterface):
     """ GitlabQueryInterface """
     AllProjects = None
-    
+
     class Project(ProjectBase):
         """ Gtihub project """
 
@@ -50,18 +53,27 @@ class GitLabQueryInterface(ProviderQueryInterface):
             """
             return self.__branch
 
-    def __init__(self, params):
+    def __init__(self, context, params):
         """ Constructor """
+        super(GitLabQueryInterface, self).__init__()
+        default_cache_time = 60 * 60 * 24  # 1 day
+
         self.__auth_token = dict_value_or_none(params, 'auth_token')
         self.__base_url  = dict_value_or_none(params, 'base_url')
         self.__group = dict_value_or_none(params, 'group')
+        self.__cache_expiry = dict_value_or_default(params, 'cache_expiry', default_cache_time)
 
         #TODO : Disabling SSL is not the best idea. Figure out why it is failing to verify (maybe selfsigned)
         self.__gitlab = gitlab.Gitlab(host=self.__base_url, token=self.__auth_token, verify_ssl=True)
 
         # only call the API once to get all projects and cache in a class static
         if not GitLabQueryInterface.AllProjects:
-            GitLabQueryInterface.AllProjects = [ project for project in self.__gitlab.getall(self.__gitlab.getprojects) ]
+            projects = context.cache.load_from_cache('gitlab_provider_projects')
+            if projects:
+                GitLabQueryInterface.AllProjects = projects
+            else:
+                GitLabQueryInterface.AllProjects = [ project for project in self.__gitlab.getall(self.__gitlab.getprojects) ]
+                context.cache.save_to_cache(GitLabQueryInterface.AllProjects, 'gitlab_provider_projects', default_cache_time)
 
     def get_display_name(self):
         """

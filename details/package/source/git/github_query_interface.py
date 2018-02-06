@@ -46,8 +46,9 @@ class GitHubQueryInterface(ProviderQueryInterface):
     		"""
     		return self.__branch
 
-    def __init__(self, params):
+    def __init__(self, context, params):
         """ Constructor """
+        super(GitHubQueryInterface, self).__init__()
         self.__auth_token = dict_value_or_none(params, 'auth_token')
         self.__org_name = dict_value_or_none(params, 'org_name')
         self.__base_url = dict_value_or_none(params, 'base_url')

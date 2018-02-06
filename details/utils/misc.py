@@ -155,6 +155,12 @@ def dict_value_or_none(in_dict, name):
         return in_dict[name]
     return None
 
+def dict_value_or_default(in_dict, name, default):
+    """ Return value if the key exists or None otherwise """
+    if name in in_dict:
+        return in_dict[name]
+    return default
+
 def dict_or_default(in_dict):
     """ Returns the passed dictionary if not None or an empty one if it is """
     if in_dict:

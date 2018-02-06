@@ -57,7 +57,7 @@ class ProviderFactory(object):
         if query_interface_name and query_interface_params:
             if not query_interface_name in self.__provider_query_classes:
                 raise ProviderFactory.ProviderClassDoesNotExist(query_interface_name)
-            query_interface = self.__provider_query_classes[query_interface_name](query_interface_params)
+            query_interface = self.__provider_query_classes[query_interface_name](self.__context, query_interface_params)
 
         return self.__provider_classes[provider_class](name, self.__context, provider_params, query_interface)
 
