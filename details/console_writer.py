@@ -56,6 +56,11 @@ class ConsoleWriter(object):
         if self.__show_task_info:
             self.write(name)
             self.__cur_task_name = name
+
+            # make sure there is a space at the end so the activity indicator
+            # is seperated nicely.
+            if self.__cur_task_name[:-1] != ' ':
+                self.__cur_task_name += ' '
             self.show_activity()
 
     def update_task(self, status):
