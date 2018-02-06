@@ -19,7 +19,7 @@ from details.utils.misc import log, log_banner, vlog, print_table
 
 class PackageSet(object):
     """ Set of all packages mapped into the the workspace """
-    
+
     def __init__(self, context):
         """ Constructor """
         self.__context = context
@@ -79,15 +79,15 @@ class PackageSet(object):
 
     def print_status(self, detailed=False, raw=False):
         """
-        Print the current status of the workspace to stdout. By default prints simple status 
+        Print the current status of the workspace to stdout. By default prints simple status
         of state of dependent projects, either modified or unmodified.
-        
+
         Args:
             detailed(Bool) : Display status of each dependent project as well.
-        """         
+        """
         #get top level dependencies
         conflicted_deps = self.__conflicted_dependencies
-                
+
         # status of all packaged in local filesystem
         pkg_status = [pkg.local_filesystem_status() for pkg in self.__package_bindings]
 
@@ -117,29 +117,29 @@ class PackageSet(object):
                         mods = status.get_modifications()
                         for mod in mods:
                             assert mod != None
-                            log('%s : %s : %s' % (binding.get_package().name, 
-                                                  mod.pretty_code_name(), 
+                            log('%s : %s : %s' % (binding.get_package().name,
+                                                  mod.pretty_code_name(),
                                                   mod.path()))
                     log('')
                     all_clean = False
-                    
+
             if all_clean:
                 log('All dependencies are unmodified')
-                
-            
+
+
         if len(conflicted_deps) > 0:
             log('')
             log_banner('Conflicts')
             print_conflicts(conflicted_deps)
             log('')
-            
+
             log('NOT OK - There are conflicted dependencies')
 
-    def bind_packages(self, mappings, refresh_dependencies=True): 
+    def bind_packages(self, mappings, refresh_dependencies=True):
         """ Creates the bindings for all packages to the local filesystem """
         for pkg in self.__packages:
             info = pkg.get_package_info(refresh_dependencies)
-            pkg_dir = '%s/%s' % (info.get_workspace_mapping(), pkg.name)                    
+            pkg_dir = '%s/%s' % (info.get_workspace_mapping(), pkg.name)
             pkg_dir = mappings.apply_templates(pkg_dir)
             pkg_dir = os.path.abspath(pkg_dir)
             self.__package_bindings.append(PackageBinding(pkg, pkg_dir))
@@ -147,7 +147,7 @@ class PackageSet(object):
     def update_package_versions(self, force=False, preview=False):
         """ Ensure the local working copy versions correspond to workspace versions.
         Packages that are not in the local workspace with be retrieved.
-        Packages that are on the incorrect version will be updated to the correct version"""        
+        Packages that are on the incorrect version will be updated to the correct version"""
         for binding in self.__package_bindings:
             package = binding.get_package()
             console = self.__context.console
@@ -166,32 +166,32 @@ class PackageSet(object):
                     log("%s not installed, would be checked out." % str(package))
                 else:
                     console.update_task('%s : Checking out' % (package.display_name()))
-                    binding.checkout()                    
+                    binding.checkout()
             elif local_version != desired_version:
                 if preview:
                     if status.is_modified():
                         log("%s is modified, requires --force to update from '%s' to version '%s'" %
                             (package.name, local_version, desired_version))
                     else:
-                        log("%s-%s would be updated to '%s'" % (package.name, 
-                                                                local_version, 
+                        log("%s-%s would be updated to '%s'" % (package.name,
+                                                                local_version,
                                                                 desired_version))
                 else:
                     console.update_task('%s : Changing version out' % (package.display_name()))
                     if binding.change_version(force=force):
-                        console.write_line("Changed %s from version '%s' to '%s'" % (package.name, 
-                                                                                     local_version, 
+                        console.write_line("Changed %s from version '%s' to '%s'" % (package.name,
+                                                                                     local_version,
                                                                                      desired_version))
                     else:
-                        console.write_line("Failed to change %s from version '%s' to '%s'" % (package.name, 
-                                                                                              local_version, 
+                        console.write_line("Failed to change %s from version '%s' to '%s'" % (package.name,
+                                                                                              local_version,
                                                                                               desired_version))
             # track current dependency for error reporting
             self.__context.current_dependency = None
 
 
     def update_packages(self):
-        """ Update all packages. This will install them if not present and ensure they are 
+        """ Update all packages. This will install them if not present and ensure they are
         up to date if the are """
         log('Updating packages')
         for pkg in self.__package_bindings:
@@ -211,7 +211,7 @@ class PackageSet(object):
     def get_package_bindings(self):
         """ Returns the local bindings for this package set. """
         return self.__package_bindings
-        
+
     def __build_dependency_graph(self, refresh_dependencies):
         """ Get full graph of dependencies for this set of packages """
         package_map = {}
