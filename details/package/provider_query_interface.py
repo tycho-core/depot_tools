@@ -180,7 +180,7 @@ class InteractiveQueryInterface(object):
                 input_ok = False
 
             if not input_ok:
-                print 'Invalid selection'
+                print('Invalid selection')
             else:
                 break
 
