@@ -75,9 +75,9 @@ class Provider(ProviderBase):
 
         #TODO: This takes the majority of the execution time performing a status, we need
         #      to optimise or cache results somewhere.
-        #if not repo.is_valid_remote_branch(pkg_version):
-        #    vlog('Could not find %s-%s' % (pkg_name, pkg_version))
-        #    raise PackageNotFound(self, pkg_name, pkg_version, "Version does not exist")
+        if not repo.is_valid_remote_branch(pkg_version):
+            vlog('Could not find %s-%s' % (pkg_name, pkg_version))
+            raise PackageNotFound(self, pkg_name, pkg_version, "Version does not exist")
         vlog('Found package %s-%s' % (pkg_name, pkg_version))
         return GitPackage(self, pkg_name, pkg_version)
 
