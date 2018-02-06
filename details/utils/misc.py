@@ -66,8 +66,14 @@ def get_script_dir():
 def ensure_valid_pathname(in_str):
     """ Return a filename based on the input string that is safe for use as a directory
     or filename """
-    import base64
-    return base64.urlsafe_b64encode(in_str)
+    safe = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890'
+    res = ''
+    for char in in_str:
+        if char in safe:
+            res += char
+        else:
+            res += '_'
+    return res
 
 def ensure_trailing_slash(in_str, sep=os.path.sep):
     """ ensure there is a trailing slash on the end of the string. Will except unix and windows
@@ -106,8 +112,7 @@ def execute(executable, root_dir, args, capture=True):
 
     cmd = [executable]
     cmd.extend(args)
-    vlog(cmd)
-    vlog(root_dir)
+    vlog('{0} cwd={1}'.format(cmd, root_dir))
     result = None
     if capture:
         # there is a problem on OS X with Python 2.7.6 where cwd is not being set correctly in
