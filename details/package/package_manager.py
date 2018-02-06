@@ -34,22 +34,6 @@ class PackageManager(object):
         """ Thrown when a package provider cannot be found """
         pass
 
-    class ProviderRegisterThread(object):
-        """ Object used to register a provider intended to be called from
-        multiple threads """
-        def __init__(self, config, factory):
-            self.provider = None
-            self.factory = factory
-            self.config = config
-
-        def run(self):
-            """ Thread function """
-            self.provider = self.factory.load_provider(self.config.name,
-                                                      self.config.provider_name,
-                                                      self.config.provider_params,
-                                                      self.config.query_interface_name,
-                                                      self.config.query_interface_params)
-
     def __init__(self, context, providers):
         self.__context = context
         # setup providers
@@ -63,36 +47,24 @@ class PackageManager(object):
         self.__provider_factory.add_provider_query_class('github', GitHubQueryInterface)
         self.__provider_factory.add_provider_query_class('gitlab', GitLabQueryInterface)
 
-        # setup aggregated provider query interface for performaing opertations
+        # setup aggregated provider query interface for performing operations
         # on all registered providers
         self.__provider_query_interface = ProviderQueryAggregator()
 
-        # load all providers in multiple threads as they can take some time to initialise and retrieve
-        # remote available projects
-        threads = []
-        for provider in providers:
-            config = ProviderConfig(self.__context, provider)
+        # load all providers
+        for provider_config in providers:
+            config = ProviderConfig(self.__context, provider_config)
 
             if config.enabled:
-                runner = PackageManager.ProviderRegisterThread(config, self.__provider_factory)
-                thread = Thread(target=runner.run)
-                threads.append((thread, runner, config))
-                thread.start()
-                vlog("Started provider thread '{0}'".format(config.name))
-
-        # wait for them all to complete
-        for thread in threads:
-            vlog("Waiting on provider thread '{0}'".format(thread[2].name))
-            thread[0].join()
-
-            # register interface to query the provider
-            provider = thread[1].provider
-            config = thread[2]
-            self.__provider_factory.register_provider(config.name, config.provider_name, provider)
-            if provider.get_query_interface():
-                self.__provider_query_interface.add_query_interface(provider.get_query_interface())
-
-            vlog('PackageManager : Imported Provider : %s : %s' %
+                provider = self.__provider_factory.load_provider(config.name,
+                                                        config.provider_name,
+                                                        config.provider_params,
+                                                        config.query_interface_name,
+                                                        config.query_interface_params)
+                self.__provider_factory.register_provider(config.name, config.provider_name, provider)
+                if provider.get_query_interface():
+                    self.__provider_query_interface.add_query_interface(provider.get_query_interface())
+                vlog('PackageManager : Imported Provider : %s : %s' %
                     (config.name, config.provider_name))
 
         # package cache
