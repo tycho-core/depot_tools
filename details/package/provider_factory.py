@@ -96,11 +96,6 @@ class ProviderFactory(object):
             raise ProviderFactory.ProviderDoesNotExist(provider_name)
         return self.__providers[provider_name]
 
-    def get_provider_query_interface(self):
-        """ Returns :
-                ProviderQueryInterface : Interface to query all attached providers 
-        """
-        return self.__provider_query_interface
 
 #-----------------------------------------------------------------------------
 # Main
