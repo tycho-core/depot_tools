@@ -94,6 +94,8 @@ class WorkspaceApp(object):
                 workspace.import_project()
 
             if options.update:
+                # need to reload the workspace to pick up the new dependency
+                workspace = Workspace(context, context.current_dir, False)
                 workspace.update(force=False, preview=False)
         else:
             workspace = Workspace(context, context.current_dir,
