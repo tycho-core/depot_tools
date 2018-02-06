@@ -78,9 +78,11 @@ class PackageManager(object):
                 thread = Thread(target=runner.run)
                 threads.append((thread, runner, config))
                 thread.start()
+                vlog("Started provider thread '{0}'".format(config.name))
 
         # wait for them all to complete
         for thread in threads:
+            vlog("Waiting on provider thread '{0}'".format(thread[2].name))
             thread[0].join()
 
             # register interface to query the provider
@@ -95,7 +97,7 @@ class PackageManager(object):
 
         # package cache
         self.__cache = {}
-            
+
     def get_package(self, provider_name, pkg_name, pkg_version, refresh=True):
         """ Get a package from the specified provider """
 
