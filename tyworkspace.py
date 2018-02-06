@@ -93,6 +93,8 @@ class WorkspaceApp(object):
             else:
                 workspace.import_project()
 
+            if options.update:
+                workspace.update(force=False, preview=False)
         else:
             workspace = Workspace(context, context.current_dir,
                                   refresh_dependencies=options.refresh)

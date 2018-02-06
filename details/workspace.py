@@ -498,7 +498,7 @@ class Workspace(object):
                                 action_help='Verify that the workspace appears correct')
         
         # foreach action
-        #foreach = add_command_line_action(subparsers, 'foreach', 
+        #foreach = add_command_line_action(subparsers, 'foreach',
         #                                  action_help='Execute the remainder of the command line' \
         #                                            ' within each dependent library\'s repository')
         #foreach.add_argument('args', nargs=argparse.REMAINDER)
@@ -523,6 +523,8 @@ class Workspace(object):
                          action='store_true', help='Include sandbox libraries in the output')
         imp.add_argument('--project', '-p',
                          action='store', help='Project to import in <provider>:<name>:<version> format')
+        imp.add_argument('--update', '-u',
+                         action='store_true', help='Update the workspace after importing')
 
 
 
