@@ -60,7 +60,7 @@ class Context(object):
         self.workspace_layout_path = os.path.join(self.template_path, 'Workspace')
 
         # Path where libraries are cached when performing dependency checks etc.
-        self.library_cache_path = ('%s/libCache') % self.temp_dir
+        self.library_cache_path = ('%s/lib_cache') % self.temp_dir
 
         # File name of package info file
         self.package_info_filename = 'typackage.info'
@@ -73,9 +73,6 @@ class Context(object):
 
         # File name of the workspace cmake file
         self.local_workspace_cmake_filename = 'tyworkspace.cmake'
-
-        # Path to where repositories are cached
-        self.repo_cache_path = ('%s/repo_cache/') % self.temp_dir
 
         # True for detailed logging
         self.verbose = False

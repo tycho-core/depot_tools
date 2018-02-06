@@ -52,7 +52,7 @@ class Provider(ProviderBase):
             self.anonymous = params['anonymous']
 
         # create a temporary directory unique to this host
-        self.temp_dir = path.join(context.temp_dir, ensure_valid_pathname(self.host))
+        self.temp_dir = path.join(context.library_cache_path, ensure_valid_pathname(self.host))
 
         if not path.exists(self.temp_dir):
             makedirs(self.temp_dir)
@@ -69,15 +69,20 @@ class Provider(ProviderBase):
 
     def find_package(self, pkg_name, pkg_version, refresh):
         vlog('Looking for package %s-%s' % (pkg_name, pkg_version))
-        
+
         # check that this package exists on the server
         repo = self.__make_remote_repo(pkg_name, '')
-        if not repo.is_valid_remote_branch(pkg_version):
-            vlog('Could not find %s-%s' % (pkg_name, pkg_version))
-            raise PackageNotFound(self, pkg_name, pkg_version, "Version does not exist")
+
+        #TODO: This takes the majority of the execution time performing a status, we need
+        #      to optimise or cache results somewhere.
+        #if not repo.is_valid_remote_branch(pkg_version):
+        #    vlog('Could not find %s-%s' % (pkg_name, pkg_version))
+        #    raise PackageNotFound(self, pkg_name, pkg_version, "Version does not exist")
         vlog('Found package %s-%s' % (pkg_name, pkg_version))
         return GitPackage(self, pkg_name, pkg_version)
-          
+
+    #TODO: try using git archive --remote=git@gitlab.com:tychohub-core/depot_tools.git HEAD tyworkspace.info
+    #      to avoid cloning the entire package.
     def get_package_info(self, pkg, refresh=True):
         # check to see if we have cached the info for this package. If not
         # then we need to sync the entire repository so we can get at them. Would be ideal

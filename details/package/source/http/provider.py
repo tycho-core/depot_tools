@@ -42,7 +42,7 @@ class Provider(ProviderBase):
         self.host_url = Url(self.host)
 
         # create a temporary directory unique to this host
-        self.temp_dir = path.join(context.temp_dir, ensure_valid_pathname(self.host))
+        self.temp_dir = path.join(context.library_cache_path, ensure_valid_pathname(self.host))
             
         if not path.exists(self.temp_dir):
             makedirs(self.temp_dir)
