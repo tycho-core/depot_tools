@@ -23,7 +23,7 @@ from details.scm.git.tools import has_credential_helper
 #-----------------------------------------------------------------------------
 
 class Repo(object):
-    """ This represents a connection between a remote git repository and a 
+    """ This represents a connection between a remote git repository and a
     local working copy """
 
     # credentials cache
@@ -41,7 +41,7 @@ class Repo(object):
 
         if root_dir:
             self.__set_local(root_dir)
- 
+
     def __set_local(self, local_dir):
         """ Set local working directory """
         self.root_dir = local_dir
@@ -92,7 +92,7 @@ class Repo(object):
 
         return credentials
 
-    def is_valid_working_copy(self):        
+    def is_valid_working_copy(self):
         """ Check that the root points to a valid git repository """
         if not os.path.exists(self.root_dir):
             return False
@@ -116,8 +116,8 @@ class Repo(object):
             return True
         return False
 
-    def repo_name(self):       
-        """ Returns the name of this repository """ 
+    def repo_name(self):
+        """ Returns the name of this repository """
         if self.remote_url:
             path = self.remote_url.path
             if path:
@@ -135,7 +135,7 @@ class Repo(object):
         if exit_code == 0:
             return True
         return False
-    
+
     def is_valid_remote_branch(self, branch_name):
         """ Check that the URL points to a valid remote repository and that the branch exists """
         self._set_remote_url_and_credentials(self.remote_url)
@@ -157,7 +157,7 @@ class Repo(object):
         #if self.is_valid_working_copy():
         #    return
         self._set_remote_url_and_credentials(self.remote_url)
-        exit_code, _, _ = self.execute_git(['clone', '-b', branch_name, str(self.remote_url), 
+        exit_code, _, _ = self.execute_git(['clone', '-b', branch_name, str(self.remote_url),
                                             self.root_dir], capture=capture)
         return exit_code == 0
 
@@ -165,27 +165,27 @@ class Repo(object):
         """ Pull latest from the remote """
         exitcode, _, _ = self.execute_git(['pull'], capture=capture)
         return exitcode == 0
-        
+
     def add_file(self, file_path, capture=True):
         """ Add a file to the index """
         exitcode, _, _ = self.execute_git(['add', file_path], capture=capture)
         return exitcode == 0
-        
+
     def status(self, capture=True):
         """ Returns status of current working copy """
         return self.execute_git(['status'], capture=capture)
-        
+
     def branch_name(self):
         """ Returns the name of the current branch of the working copy """
         res = self.execute_git(['rev-parse', '--abbrev-ref', 'HEAD'])
         name = res[1].strip()
         return name
-    
+
     def switch_branch(self, branch_name, capture=True):
         """ Switch the local working copy to another existing branch """
         exitcode, _, _ = self.execute_git(['checkout', branch_name], capture=True)
-        return exitcode == 0        
-    
+        return exitcode == 0
+
     def is_clean(self):
         """ Returns true if there are no modification to the local working copy """
         return len(self.get_modifications()) == 0

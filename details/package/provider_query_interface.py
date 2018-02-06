@@ -7,6 +7,7 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from __future__ import print_function
 from abc import ABCMeta, abstractmethod
 from details.utils.misc import log_banner
 
@@ -25,8 +26,8 @@ class VersionBase(object):
         self.__name = name
 
     def get_display_name(self):
-        """ Returns : 
-                string : User friendly name for showing to user 
+        """ Returns :
+                string : User friendly name for showing to user
         """
         return self.__name
 
@@ -41,12 +42,12 @@ class ProjectBase(object):
         self.__owner = owner
 
     def get_display_name(self):
-        """ Returns : 
+        """ Returns :
                 string : User friendly name for showing to user """
         return self.__name
 
     def get_versions(self):
-        """ Returns : 
+        """ Returns :
                 list(VersionBase)  : List of available versions for this project
         """
         return self.__owner.get_project_versions(self)
@@ -58,11 +59,11 @@ class ProviderQueryInterface(object):
     """ ProviderQueryInterface """
     __metaclass__ = ABCMeta
 
-    
+
     def __init__(self):
         """ Constructor """
         pass
-            
+
     def set_provider(self, provider):
         self.__provider = provider
 
@@ -76,7 +77,7 @@ class ProviderQueryInterface(object):
             string : Pretty name of the query interface to display to user
         """
         pass
-        
+
     @abstractmethod
     def get_projects(self):
         """
@@ -120,24 +121,24 @@ class InteractiveQueryInterface(object):
         for project in projects:
             name = project.get_display_name()
             if existing_deps and existing_deps.project_exists(name):
-                print '* %s:%s' % (project.get_owner().get_provider().source_name, name)
+                print('* %s:%s' % (project.get_owner().get_provider().source_name, name))
             else:
-                print '%s:%s' % (project.get_owner().get_provider().source_name, name)
+                print('%s:%s' % (project.get_owner().get_provider().source_name, name))
 
 
     def pick_project(self, existing_deps=None):
         """
         Interactively choose a hub project. Only shows projects that are not already workspace
         level dependencies.
-        
+
         Args:
             existing_deps(list(wgdepends.Dependency)) : List of existing dependencies or None
-            
+
         Returns:
             Github.Repository
         """
         # prune out existing repos
-        all_projects = self.__query_interface.get_projects()        
+        all_projects = self.__query_interface.get_projects()
         projects = []
         if existing_deps is None:
             projects = all_projects
@@ -145,44 +146,44 @@ class InteractiveQueryInterface(object):
             for project  in all_projects:
                 if not existing_deps.contains_project(project.get_display_name()):
                     projects.append(project)
-                    
+
         if len(projects) == 0:
-            print 'All projects are existing dependencies'
+            print('All projects are existing dependencies')
             return None
-                            
+
         num_projects = 0
-        for project in projects:            
-            print '[%s] %s:%s' % (num_projects, project.get_owner().get_provider().source_name, project.get_display_name())
+        for project in projects:
+            print('[%s] %s:%s' % (num_projects, project.get_owner().get_provider().source_name, project.get_display_name()))
             num_projects += 1
-                
-        print ''
-        print '[Q] Quit'    
-        print ''
+
+        print('')
+        print('[Q] Quit')
+        print('')
         while True:
             input_ok = True
             index = -1
             exit = False
             try:
-                ch = raw_input('Enter project index : ')                
-                if ch == "q" or ch == "Q":              
+                ch = raw_input('Enter project index : ')
+                if ch == "q" or ch == "Q":
                     exit = True
                 else:
                     index = int(ch)
             except:
                 input_ok = False
-            
+
             if exit:
                 import sys
                 sys.exit()
 
             if index < 0 or index >= num_projects:
                 input_ok = False
-                
+
             if not input_ok:
                 print 'Invalid selection'
             else:
                 break
-            
+
         return projects[index]
 
 
@@ -190,21 +191,21 @@ class InteractiveQueryInterface(object):
     def pick_project_version(project):
         """
         Interactively select a version for a hub project.
-        
+
         Args:
             project(Project) : Project to show versions for.
-            
+
         Returns:
             Github.Branch
         """
         versions = project.get_versions()
-        
+
         num_versions = 0
         for version in versions:
-            print '[%s] %s:%s' % (num_versions, project.get_display_name(), version.get_display_name())
+            print('[%s] %s:%s' % (num_versions, project.get_display_name(), version.get_display_name()))
             num_versions += 1
-                    
-        print ''
+
+        print('')
         while True:
             input_ok = True
             index = -1
@@ -212,32 +213,32 @@ class InteractiveQueryInterface(object):
                 index = int(raw_input('Enter version index : '))
             except:
                 input_ok = False
-            
+
             if index < 0 or index >= num_versions:
                 input_ok = False
-                
+
             if not input_ok:
-                print 'Invalid selection'
+                print('Invalid selection')
             else:
                 break
-        
-        return versions[index]         
+
+        return versions[index]
 
     def select_import(self, existing_deps=None):
         """
         Interactively select a hub project and branch.
-        
+
         Args:
             existing_deps(list(wgdepends.Dependency)) : List of existing dependencies or None
-            
+
         Returns:
-            list : [ Github.Repository, Github.Branch ] 
-        """        
+            list : [ Github.Repository, Github.Branch ]
+        """
         log_banner('Select project')
         project = self.pick_project(existing_deps=existing_deps)
         if project == None:
             return None
-        print ''
+        print('')
         log_banner('Select version')
         version = self.pick_project_version(project)
         return [project, version]

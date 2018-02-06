@@ -15,7 +15,7 @@ from details.package.provider_query_interface import ProviderQueryInterface
 
 class ProviderQueryAggregator(ProviderQueryInterface):
     """ Aggregates multiple provider query interfaces into a single interface """
-    
+
     def __init__(self):
         """ Constructor """
         self.__interfaces = []
@@ -29,11 +29,11 @@ class ProviderQueryAggregator(ProviderQueryInterface):
         Returns:
             string : Pretty name of the query interface to display to user
         """
-        return "Aggregated" 
+        return "Aggregated"
 
     def get_projects(self):
         """ Returns:
-                list(Project) : List of all projects available from all providers 
+                list(Project) : List of all projects available from all providers
         """
         projects = []
         for provider in self.__interfaces:
@@ -49,7 +49,7 @@ class ProviderQueryAggregator(ProviderQueryInterface):
 
         Returns:
             list(VersionBase) : List of available versions for the given project
-        """     
+        """
         return project.get_versions()
 
 

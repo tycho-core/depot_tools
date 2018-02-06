@@ -7,6 +7,7 @@
 #-----------------------------------------------------------------------------
 # Imports
 #-----------------------------------------------------------------------------
+from __future__ import print_function
 import os
 import os.path
 import argparse
@@ -53,7 +54,7 @@ class Workspace(object):
         self.__info = WorkspaceInfo.create_from_json_file(self.get_workspace_info_path())
 
         context.console.start_task('Processing dependencies')
-        self.__package_set = PackageSet.create_from_dependency(self.context, 
+        self.__package_set = PackageSet.create_from_dependency(self.context,
                                                                self.__info.get_dependencies(),
                                                                refresh_dependencies)
         context.console.end_task()
@@ -62,7 +63,7 @@ class Workspace(object):
         mappings = WorkspaceMapping(self.root_dir)
 
         # apply global mappings
-        default_mapping_path = os.path.join(self.context.config_dir, 
+        default_mapping_path = os.path.join(self.context.config_dir,
                                             'default_workspace_mappings.json')
 
         if os.path.exists(default_mapping_path):
@@ -79,10 +80,10 @@ class Workspace(object):
         self.__package_set.bind_packages(mappings, refresh_dependencies)
 
     @staticmethod
-    def create_new_workspace(context, root_dir, quiet=False):        
+    def create_new_workspace(context, root_dir, quiet=False):
         """
-        Initialize a new workspace. 
-        
+        Initialize a new workspace.
+
         1) copy default workspace files from templates/workspace
         2) perform a workspace update to get any default libraries
         """
@@ -99,9 +100,9 @@ class Workspace(object):
                 dir_tree = get_directory_tree(root_dir)
                 dir_tree.delete()
 
-        
+
         # load the workspace template
-        template_info_path = os.path.join(context.workspace_layout_path, 
+        template_info_path = os.path.join(context.workspace_layout_path,
                                           context.template_info)
 
         template = Template.load_from_file(context, template_info_path)
@@ -129,7 +130,7 @@ class Workspace(object):
         """
         package_set = self.__package_set
 
-        # check for conflicted dependencies     
+        # check for conflicted dependencies
         if package_set.has_conflicts():
             if force:
                 log('Forcing update')
@@ -137,7 +138,7 @@ class Workspace(object):
                     log('  %s will use %s' % (project, str(refs[0])))
             else:
                 log('FAILED : There are conflicted dependencies')
-                log('   use --force to update anyway using first dependency') 
+                log('   use --force to update anyway using first dependency')
                 log('')
                 print_conflicts(package_set.conflicted_dependencies())
                 return False
@@ -191,14 +192,14 @@ class Workspace(object):
         return WorkspaceInfo.create_from_json_file(path)
 
     def verify(self):
-        """ Check that the workspace appears to be valid."""     
+        """ Check that the workspace appears to be valid."""
         self.context.console.start_task('Verifying workspace')
         for worskpace_file in [self.context.workspace_info_filename]:
             if not os.path.exists(os.path.join(self.root_dir, worskpace_file)):
                 return False
 
         pkg_status = []
-        
+
         workspace_corrupted = False
 
         # constants for describing current state of workspace packages
@@ -226,17 +227,17 @@ class Workspace(object):
                     break
 
                 # query provider about the status of the package
-                dep = Dependency.create_from_string(project).children[0] 
+                dep = Dependency.create_from_string(project).children[0]
                 pkg = self.context.package_manager.get_package(dep.source, dep.name, dep.branch)
 
                 if not pkg:
                     # package does not exist anymore
                     pkg_status.append([
-                        PkgDoesNotExistInProvider, 
-                        "Package '%s' not longer exists in provider '%s'" % (str(pkg), 
+                        PkgDoesNotExistInProvider,
+                        "Package '%s' not longer exists in provider '%s'" % (str(pkg),
                                                                              pkg.provider.source_name)
-                        ])  
-                else:                  
+                        ])
+                else:
                     local_status = pkg.local_filesystem_status(os.path.join(self.root_dir, local_dir))
 
                     if not local_status.is_installed():
@@ -264,24 +265,24 @@ class Workspace(object):
                             PkgPristine,
                             "Package '%s' is in a pristine state" % (str(pkg))
                             ])
-                            
+
         self.context.console.end_task()
 
         # print report
         for status in pkg_status:
-            print status[1]
+            print(status[1])
 
         return True
-        
+
     def update_git_ignore_file(self, dependencies):
-        """ Update the .gitignore file for this workspace to include all dependencies """     
+        """ Update the .gitignore file for this workspace to include all dependencies """
         path = os.path.join(self.root_dir, '.gitignore')
 
         # read existing file
         gi_file = open(path, 'r')
         lines = gi_file.readlines()
         gi_file.close()
-        
+
         # write all lines up to system marker line then append dependencies folders
         gi_file = open(path, 'w+')
         for line in lines:
@@ -289,39 +290,39 @@ class Workspace(object):
                 gi_file.write(line)
             else:
                 break
-            
+
         gi_file.write('# ignore embedded hub libraries\n')
         for dep in dependencies:
             gi_file.write(dep.name + '/*\n')
         gi_file.close()
-               
-    def status(self, detailed=False, raw=False):       
+
+    def status(self, detailed=False, raw=False):
         """
-        Print the current status of the workspace to stdout. By default prints simple status 
+        Print the current status of the workspace to stdout. By default prints simple status
         of state of dependent projects, either modified or unmodified.
-        
+
         Args:
             detailed(Bool) : Display status of each dependent project as well.
-        """         
-        self.__package_set.print_status(detailed=detailed, raw=raw)        
+        """
+        self.__package_set.print_status(detailed=detailed, raw=raw)
 
     def get_workspace_info_path(self):
         """
         Get the path to the workspace info file
-        
+
         Returns:
             string : Path to dependency file
         """
-        return os.path.join(self.root_dir, self.context.workspace_info_filename)                        
-                            
-                
+        return os.path.join(self.root_dir, self.context.workspace_info_filename)
+
+
     def foreach(self, args):
         """
         Execute a process in the root of all dependent projects
-        
+
         Args:
             args(list) : Argument list to use. i.e. ['git', 'status']
-        """  
+        """
         # root = self.get_dependency_graph(refresh=False)
         # deps = root.flatten_dependencies()
         # for child in deps:
@@ -329,13 +330,13 @@ class Workspace(object):
         #     cwd = os.path.join(self.root_dir, child.name)
         #     process = subprocess.Popen(cmd, cwd=cwd)
         #     process.wait()
-        
+
     def show_branches(self):
         """
         Print list of all dependent projects and which branch they are using to stdout.
         """
         for binding in self.__package_set.get_package_bindings():
-            print('%-16s -> %s' % (binding.display_name(), 
+            print('%-16s -> %s' % (binding.display_name(),
                                    binding.local_filesystem_status().get_version()))
 
 
@@ -404,7 +405,7 @@ class Workspace(object):
         """
         Import a hub project into this workspace. Will interactively query the user for project
         and branch name and update the workspace dependency file.
-        """             
+        """
         query_interface = self.context.package_manager.get_aggregated_query_interface()
         interactive_interface = InteractiveQueryInterface(query_interface)
 
@@ -427,7 +428,7 @@ class Workspace(object):
                                     project.get_display_name(),
                                     version.get_display_name())
 
-        
+
     def get_root_dependency(self):
         """ Get the projects this workspace depends on """
         return self.__package_set.get_root_dependency()
@@ -435,11 +436,11 @@ class Workspace(object):
     @staticmethod
     def add_command_line_options(parser):
         """
-        Add all command line arguments to the main parser. 
+        Add all command line arguments to the main parser.
         """
         parser.set_defaults(mode='workspace')
         subparsers = parser.add_subparsers()
-        
+
         # init action
         add_command_line_action(subparsers, 'init', action_help='Initialize a new workspace')
 
@@ -449,15 +450,15 @@ class Workspace(object):
 
         update.add_argument('--refresh', '-r', action='store_true',
                             help='Refresh dependencies. By default dependent repositories ' \
-                                        'are not updated before dependency checking.')   
+                                        'are not updated before dependency checking.')
 
-        update.add_argument('--force', '-f', action='store_true', 
+        update.add_argument('--force', '-f', action='store_true',
                             help='Force updating all dependencies even if there is a conflict')
-        update.add_argument('--preview', '-p', action='store_true', 
+        update.add_argument('--preview', '-p', action='store_true',
                             help='Do not update, just display what would happen if you did')
 
-        # depends action        
-        depends = add_command_line_action(subparsers, 'depends', 
+        # depends action
+        depends = add_command_line_action(subparsers, 'depends',
                                           action_help=
                                           'Show dependency information for this workspace')
 
@@ -470,20 +471,20 @@ class Workspace(object):
 
         # delete action
         add_command_line_action(subparsers, 'delete', action_help='Delete the workspace')
-        
+
         # status action
-        status = add_command_line_action(subparsers, 'status', 
+        status = add_command_line_action(subparsers, 'status',
                                          action_help=
                                          'Show status of all repositories in the workspace')
         status.add_argument('--detailed', '-d',
-                            action='store_true', 
+                            action='store_true',
                             help='Show detailed status of all repositories in the workspace')
-        status.add_argument('--raw', '-r', 
-                            action='store_true', 
+        status.add_argument('--raw', '-r',
+                            action='store_true',
                             help='Show raw output from underlying provider of all repositories' \
                                  ' in the workspace')
-        
-        
+
+
         # versions action
         versions = add_command_line_action(subparsers, 'versions',
                                 action_help='Print the projects and versions this' \
@@ -494,17 +495,17 @@ class Workspace(object):
                              'repositories are not updated before dependency checking.')
 
         # verify action
-        add_command_line_action(subparsers, 'verify', 
+        add_command_line_action(subparsers, 'verify',
                                 action_help='Verify that the workspace appears correct')
-        
+
         # foreach action
         #foreach = add_command_line_action(subparsers, 'foreach',
         #                                  action_help='Execute the remainder of the command line' \
         #                                            ' within each dependent library\'s repository')
         #foreach.add_argument('args', nargs=argparse.REMAINDER)
-        
+
         # show command
-        show = add_command_line_action(subparsers, 'show', 
+        show = add_command_line_action(subparsers, 'show',
                                        action_help='Display information about this workspace. ' \
                                        'Use \'tyworkspace.py show -h\' for more options')
 
