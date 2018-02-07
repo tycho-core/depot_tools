@@ -94,6 +94,12 @@ class Repo(object):
 
     def is_valid_working_copy(self):
         """ Check that the root points to a valid git repository """
+
+        #TODO: This calls git to be really sure the repo is valid but it
+        #      is super slow so we don't do it, need to think whether we
+        #      should at all or maybe only during a workspace verify.
+        strong_check = False
+
         if not os.path.exists(self.root_dir):
             return False
 
@@ -108,13 +114,14 @@ class Repo(object):
         if not os.path.isdir(git_dir):
             return False
 
-        cur_dir = os.getcwd()
-        os.chdir(self.root_dir)
-        exit_code, _, _ = self.execute_git(['rev-parse', '--git-dir'])
-        os.chdir(cur_dir)
-        if exit_code == 0:
-            return True
-        return False
+        if strong_check:
+            cur_dir = os.getcwd()
+            os.chdir(self.root_dir)
+            exit_code, _, _ = self.execute_git(['rev-parse', '--git-dir'])
+            os.chdir(cur_dir)
+            return exit_code == 0
+
+        return True
 
     def repo_name(self):
         """ Returns the name of this repository """

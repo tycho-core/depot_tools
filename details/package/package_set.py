@@ -214,24 +214,28 @@ class PackageSet(object):
 
     def __build_dependency_graph(self, check_valid, refresh_dependencies):
         """ Get full graph of dependencies for this set of packages """
-        package_map = {}
+        package_dep_map = {}
 
-        def get_dep(dep):
+        def get_dep(in_dep):
             """ Retrieve package dependencies """
             # track current dependency for error reporting
-            self.__context.current_dependency = dep
+            self.__context.current_dependency = in_dep
+            self.__context.console.update_task('Checking package %s' % (str(in_dep)))
 
-            self.__context.console.update_task('Checking package %s' % (str(dep)))
-            pkg = self.__context.package_manager.get_package(dep.source, dep.name, dep.branch,
-                                                             check_valid, refresh_dependencies)
-            dep = pkg.get_dependencies(refresh_dependencies)
-            #dep.package = pkg
-            package_map[str(dep)] = pkg
+            in_dep_str = str(in_dep)
+            out_dep = None
+            if in_dep_str in package_dep_map:
+                out_dep = package_dep_map[in_dep_str]
+            else:
+                pkg = self.__context.package_manager.get_package(in_dep.source, in_dep.name, in_dep.branch,
+                                                                 check_valid, refresh_dependencies)
+                out_dep = pkg.get_dependencies(refresh_dependencies)
+                package_dep_map[in_dep_str] = out_dep
 
             # track current dependency for error reporting
             self.__context.current_dependency = None
 
-            return dep
+            return out_dep
 
         # build the dependency graph
         self.__root_dependency.build_dependency_graph(refresh=False, dep_func=get_dep)
