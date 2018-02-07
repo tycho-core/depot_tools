@@ -10,6 +10,7 @@
 import json
 import time
 import os.path as path
+import random
 from os import makedirs
 from utils.misc import ensure_valid_pathname
 
@@ -28,8 +29,11 @@ class Cache(object):
         if not path.exists(self.__cache_dir):
             makedirs(self.__cache_dir)
 
+    def __make_cache_path(self, name):
+        return path.join(self.__cache_dir, ensure_valid_pathname(name) + '.json')
+
     def load_from_cache(self, name):
-        cache_path = path.join(self.__cache_dir, ensure_valid_pathname(name) + '.json')
+        cache_path = self.__make_cache_path(name)
         if not path.exists(cache_path):
             return None
 
@@ -44,8 +48,22 @@ class Cache(object):
 
         return None
 
-    def save_to_cache(self, obj, name, expiry_seconds):
-        cache_path = path.join(self.__cache_dir, ensure_valid_pathname(name) + '.json')
+    def save_to_cache(self, obj, name, expiry_seconds, random_jitter=None):
+        """ Save an object to the cache.
+
+        Args:
+            obj(object)          : Object to save, must be serializable to json
+            name(string)         : Name of the object on disk
+            expiry_seconds(int)  : Number of seconds before the cache expires
+            random_jitter(float) : Percentage of expiry seconds +/- to randomly jitter the expiry time.
+                                   This can be used to avoid many cache items expiring simulataneously.
+        """
+        if random_jitter:
+            jitter_range = int(expiry_seconds * random_jitter)
+            jitter_seconds = random.randrange(jitter_range * 2) - jitter_range
+            expiry_seconds += jitter_seconds
+
+        cache_path = self.__make_cache_path(name)
         cache_obj = {
             "cache_expiry": int(time.time()) + expiry_seconds,
             "object": obj
