@@ -16,6 +16,8 @@ import json
 import cProfile
 import StringIO
 import pstats
+import signal
+from functools import partial
 from details.context import Context
 from details.utils.misc import vlog, enable_verbose_log
 
@@ -26,6 +28,12 @@ from details.utils.misc import vlog, enable_verbose_log
 class ConsoleApp(object):
     """ ConsoleApp """
 
+    def abort(self):
+        """ Abort the running application """
+        print('User terminated')
+        self.context.console.shutdown()
+        sys.exit(1)
+
     @staticmethod
     def to_json_string(obj):
         """ Create a formatted json string from the passed object """
@@ -34,6 +42,9 @@ class ConsoleApp(object):
     def __init__(self, app, app_name):
         """ Constructor """
         self.app = app
+
+        # intercept kill signals from the user and clean nicely
+        signal.signal(signal.SIGINT, lambda signal, frame: self.abort());
 
         # setup main context
         self.context = Context()
