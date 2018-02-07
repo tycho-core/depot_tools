@@ -23,7 +23,7 @@ class MockProvider(ProviderBase):
     def __init__(self, context):
         super(MockProvider, self).__init__('brian', context, 'mock', True, None)
 
-    def find_package(self, pkg_name, pkg_version, refresh):
+    def find_package(self, pkg_name, pkg_version, check_valid, refresh):
         pass
 
     def get_package_dependencies(self, package):

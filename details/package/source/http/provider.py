@@ -23,7 +23,7 @@ import os
 
 class Provider(ProviderBase):
     """ HttpProvider """
-    
+
     def __init__(self, name, context, params, query_interface):
         """ Constructor """
         super(Provider, self).__init__(name, context, 'http', False, query_interface)
@@ -61,11 +61,11 @@ class Provider(ProviderBase):
         return '%s%s/%s' % (str(self.host_url), pkg_name, pkg_version)
     
 
-    def find_package(self, pkg_name, pkg_version, refresh=True):
+    def find_package(self, pkg_name, pkg_version, check_valid=True, refresh=True):
         vlog('Looking for package %s-%s' % (pkg_name, pkg_version))
 
         pkg = HttpPackage(self, pkg_name, pkg_version)
-        if not self.get_package_info(pkg, refresh):
+        if check_valid and not self.get_package_info(pkg, refresh):
             vlog('Could not find %s-%s' % (pkg_name, pkg_version))
             raise PackageNotFound(self, pkg_name, pkg_version, "Package or version does not exist")
 

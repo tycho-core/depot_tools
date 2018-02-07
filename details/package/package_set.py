@@ -30,28 +30,28 @@ class PackageSet(object):
         self.__conflicted_dependencies = None
 
     @staticmethod
-    def create_from_dependency(context, root_dep, refresh_dependencies):
+    def create_from_dependency(context, root_dep, check_valid, refresh_dependencies):
         """ Create a package set from root dependency """
         dset = PackageSet(context)
-        dset.set_root_dependency(root_dep, refresh_dependencies)
+        dset.set_root_dependency(root_dep, check_valid, refresh_dependencies)
         return dset
 
     @staticmethod
-    def create_from_dependency_string(context, in_str, refresh_dependencies=True):
+    def create_from_dependency_string(context, in_str, check_valid=True, refresh_dependencies=True):
         """ Create a package set from a dependency string """
         dep = Dependency.create_from_string(in_str)
-        return PackageSet.create_from_dependency(context, dep, refresh_dependencies)
+        return PackageSet.create_from_dependency(context, dep, check_valid, refresh_dependencies)
 
     @staticmethod
-    def create_from_dependency_file(context, file_path, refresh_dependencies=True):
+    def create_from_dependency_file(context, file_path, check_valid=True, refresh_dependencies=True):
         """ Create a package set from a dependency file """
         dep = Dependency.create_from_file(file_path)
-        return PackageSet.create_from_dependency(context, dep, refresh_dependencies)
+        return PackageSet.create_from_dependency(context, dep, check_valid, refresh_dependencies)
 
-    def set_root_dependency(self, root_dep, refresh_dependencies=True):
+    def set_root_dependency(self, root_dep, check_valid=True, refresh_dependencies=True):
         """ Set the root dependencies """
         self.__root_dependency = root_dep
-        self.__build_dependency_graph(refresh_dependencies)
+        self.__build_dependency_graph(check_valid, refresh_dependencies)
 
     def get_root_dependency(self):
         """ Get the root of the dependency graph for this set """
@@ -212,7 +212,7 @@ class PackageSet(object):
         """ Returns the local bindings for this package set. """
         return self.__package_bindings
 
-    def __build_dependency_graph(self, refresh_dependencies):
+    def __build_dependency_graph(self, check_valid, refresh_dependencies):
         """ Get full graph of dependencies for this set of packages """
         package_map = {}
 
@@ -223,7 +223,7 @@ class PackageSet(object):
 
             self.__context.console.update_task('Checking package %s' % (str(dep)))
             pkg = self.__context.package_manager.get_package(dep.source, dep.name, dep.branch,
-                                                             refresh_dependencies)
+                                                             check_valid, refresh_dependencies)
             dep = pkg.get_dependencies(refresh_dependencies)
             #dep.package = pkg
             package_map[str(dep)] = pkg

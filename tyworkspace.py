@@ -46,6 +46,11 @@ class WorkspaceApp(object):
             return info
 
 
+    def get_workspace(self, context, options):
+        return Workspace(context,
+                        context.current_dir,
+                        check_valid=options.validate,
+                        refresh_dependencies=options.refresh)
 
     def app_main(self, context, options):
         """ Main entry point """
@@ -55,13 +60,13 @@ class WorkspaceApp(object):
             if not Workspace.create_new_workspace(context, context.current_dir):
                 print("Failed to create workspace")
             else:
-                workspace = Workspace(context, context.current_dir)
+                workspace = self.get_workspace(context, options)
                 workspace.update()
         elif options.action == 'status':
-            workspace = Workspace(context, context.current_dir, False)
+            workspace = self.get_workspace(context, options)
             workspace.status(detailed=options.detailed, raw=options.raw)
         elif options.action == 'show':
-            workspace = Workspace(context, context.current_dir, False)
+            workspace = self.get_workspace(context, options)
             if options.subaction == 'branches':
                 workspace.show_branches()
             elif options.subaction == 'imports':
@@ -79,13 +84,13 @@ class WorkspaceApp(object):
                             msg = '* ' + msg
                         context.console.write_line(msg)
         elif options.action == 'verify':
-            workspace = Workspace(context, context.current_dir, False)
+            workspace = self.get_workspace(context, options)
             if workspace.verify():
                 print('Workspace is ok')
             else:
                 print('Workspace is not ok')
         elif options.action == 'import':
-            workspace = Workspace(context, context.current_dir, False)
+            workspace = self.get_workspace(context, options)
 
             if options.project is not None:
                 provider, project, version = options.project.split(':')
@@ -95,11 +100,10 @@ class WorkspaceApp(object):
 
             if options.update:
                 # need to reload the workspace to pick up the new dependency
-                workspace = Workspace(context, context.current_dir, False)
+                workspace = self.get_workspace(context, options)
                 workspace.update(force=False, preview=False)
         else:
-            workspace = Workspace(context, context.current_dir,
-                                  refresh_dependencies=options.refresh)
+            workspace = self.get_workspace(context, options)
         #    elif options.action == 'clean':
         #       workspace.clean()
             if options.action == 'depends':

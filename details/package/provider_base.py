@@ -38,7 +38,7 @@ class ProviderException(Exception):
         self.provider = provider        
         self.msg = msg
 
-class PackageNotFound(ProviderException): 
+class PackageNotFound(ProviderException):
     """ A package could not be found """
 
     def __init__(self, provider, package_name, package_version, reason):
@@ -103,7 +103,7 @@ class ProviderBase(object):
             self.__query_interface.set_provider(self)
 
     @abstractmethod
-    def find_package(self, pkg_name, pkg_version, refresh):
+    def find_package(self, pkg_name, pkg_version, check_valid, refresh):
         """
         Get the package from this provider.
 

@@ -67,15 +67,16 @@ class Provider(ProviderBase):
         """ Construct the URL that points to the package """
         return Url('%s/%s.git' % (str(self.host_url), pkg_name))
 
-    def find_package(self, pkg_name, pkg_version, refresh):
+    def find_package(self, pkg_name, pkg_version, check_valid, refresh):
         vlog('Looking for package %s-%s' % (pkg_name, pkg_version))
+        check_remote = check_valid
 
         # check that this package exists on the server
         repo = self.__make_remote_repo(pkg_name, '')
 
         #TODO: This takes the majority of the execution time performing a status, we need
         #      to optimise or cache results somewhere.
-        if not repo.is_valid_remote_branch(pkg_version):
+        if check_remote and not repo.is_valid_remote_branch(pkg_version):
             vlog('Could not find %s-%s' % (pkg_name, pkg_version))
             raise PackageNotFound(self, pkg_name, pkg_version, "Version does not exist")
         vlog('Found package %s-%s' % (pkg_name, pkg_version))

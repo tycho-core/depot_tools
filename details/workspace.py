@@ -35,7 +35,7 @@ from details.processors.cmake_build_processor import CMakeBuildProcessor
 class Workspace(object):
     """ Object representing the current workspace."""
 
-    def __init__(self, context, root_dir, refresh_dependencies = True):
+    def __init__(self, context, root_dir, check_valid=True, refresh_dependencies=True):
         """ Constructor """
 
         # root directory of the workspace
@@ -56,7 +56,7 @@ class Workspace(object):
         context.console.start_task('Processing dependencies')
         self.__package_set = PackageSet.create_from_dependency(self.context,
                                                                self.__info.get_dependencies(),
-                                                               refresh_dependencies)
+                                                               check_valid, refresh_dependencies)
         context.console.end_task()
 
         # setup the mappings
@@ -272,7 +272,7 @@ class Workspace(object):
         for status in pkg_status:
             print(status[1])
 
-        return True
+        return workspace_corrupted
 
     def update_git_ignore_file(self, dependencies):
         """ Update the .gitignore file for this workspace to include all dependencies """
@@ -441,16 +441,22 @@ class Workspace(object):
         parser.set_defaults(mode='workspace')
         subparsers = parser.add_subparsers()
 
+        def add_common_flags(command):
+            command.add_argument('--refresh', '-r', action='store_true',
+                                help='Refresh dependencies. By default dependent repositories ' \
+                                'are not updated before dependency checking.')
+
+            command.add_argument('--validate', '-v', action='store_true',
+                                 help='Check dependenices are valid by querying the remote, ' \
+                                 'this can be slow.')
+
         # init action
         add_command_line_action(subparsers, 'init', action_help='Initialize a new workspace')
 
         # update action
         update = add_command_line_action(subparsers, 'update',
                                          action_help='Update all libraries in the workspace')
-
-        update.add_argument('--refresh', '-r', action='store_true',
-                            help='Refresh dependencies. By default dependent repositories ' \
-                                        'are not updated before dependency checking.')
+        add_common_flags(update)
 
         update.add_argument('--force', '-f', action='store_true',
                             help='Force updating all dependencies even if there is a conflict')
@@ -461,10 +467,7 @@ class Workspace(object):
         depends = add_command_line_action(subparsers, 'depends',
                                           action_help=
                                           'Show dependency information for this workspace')
-
-        depends.add_argument('--refresh', '-r', action='store_true',
-                             help='Refresh dependencies. By default dependent ' \
-                             'repositories are not updated before dependency checking.')
+        add_common_flags(depends)
 
         depends.add_argument('--force', '-f', action='store_true',
                              help='Force updating all dependencies')
@@ -490,9 +493,7 @@ class Workspace(object):
                                 action_help='Print the projects and versions this' \
                                              ' workspace depends on')
 
-        versions.add_argument('--refresh', '-r', action='store_true',
-                             help='Refresh dependencies. By default dependent ' \
-                             'repositories are not updated before dependency checking.')
+        add_common_flags(versions)
 
         # verify action
         add_command_line_action(subparsers, 'verify',
@@ -509,6 +510,7 @@ class Workspace(object):
                                        action_help='Display information about this workspace. ' \
                                        'Use \'tyworkspace.py show -h\' for more options')
 
+        add_common_flags(show)
         show_subparsers = show.add_subparsers()
         add_command_line_action(show_subparsers, 'branches',
                                 action_help='Show which branches are currently in the workspace',
@@ -520,7 +522,8 @@ class Workspace(object):
         # import command
         imp = add_command_line_action(subparsers, 'import',
                                       action_help='Import a project into the current workspace')
-        imp.add_argument('--sandbox', '-r',
+        add_common_flags(imp)
+        imp.add_argument('--sandbox', '-s',
                          action='store_true', help='Include sandbox libraries in the output')
         imp.add_argument('--project', '-p',
                          action='store', help='Project to import in <provider>:<name>:<version> format')

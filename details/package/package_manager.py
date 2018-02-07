@@ -70,7 +70,7 @@ class PackageManager(object):
         # package cache
         self.__cache = {}
 
-    def get_package(self, provider_name, pkg_name, pkg_version, refresh=True):
+    def get_package(self, provider_name, pkg_name, pkg_version, check_valid=True, refresh=True):
         """ Get a package from the specified provider """
 
         # check if we have already cached this
@@ -78,7 +78,7 @@ class PackageManager(object):
         if key in self.__cache:
             return self.__cache[key]
         provider = self.__provider_factory.get_provider(provider_name)
-        pkg = provider.find_package(pkg_name, pkg_version, refresh)
+        pkg = provider.find_package(pkg_name, pkg_version, check_valid, refresh)
         self.__cache[key] = pkg
         return pkg
 

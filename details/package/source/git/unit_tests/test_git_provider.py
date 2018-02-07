@@ -35,7 +35,7 @@ class TestGitProvider(TestCase):
             'username' : GitConfig.username,
             'password' : GitConfig.password
         }
-        provider = Provider('hub', self.context, test_params, None)     
+        provider = Provider('hub', self.context, test_params, None)
         self.assertIsNotNone(provider)
         return provider
 
@@ -50,7 +50,7 @@ class TestGitProvider(TestCase):
     def test_find_package(self):
         # find package tests
         provider = self.__make_provider()
-        pkg = provider.find_package(TestGitProvider.__test_pkg_name, 'master', True)
+        pkg = provider.find_package(TestGitProvider.__test_pkg_name, 'master', True, True)
         self.assertIsNotNone(pkg)
 
         # test invalid package
@@ -59,6 +59,7 @@ class TestGitProvider(TestCase):
                           provider,
                           'hubInvalid',
                           'master',
+                          True,
                           True)
 
         # test invalid version
@@ -67,11 +68,12 @@ class TestGitProvider(TestCase):
                           provider,
                           TestGitProvider.__test_pkg_name,
                           'Tiger',
+                          True,
                           True)
 
     def test_get_package_dependencies(self):
         provider = self.__make_provider()
-        pkg = provider.find_package(TestGitProvider.__test_pkg_name, 'master', True)
+        pkg = provider.find_package(TestGitProvider.__test_pkg_name, 'master', True, True)
         self.assertIsNotNone(pkg)
         deps = provider.get_package_dependencies(pkg, True)
         self.assertIsNotNone(deps)
