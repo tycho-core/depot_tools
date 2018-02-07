@@ -451,8 +451,8 @@ class Workspace(object):
                                  'this can be slow.')
 
         # init action
-        add_command_line_action(subparsers, 'init', action_help='Initialize a new workspace')
-
+        init = add_command_line_action(subparsers, 'init', action_help='Initialize a new workspace')
+        add_common_flags(init)
         # update action
         update = add_command_line_action(subparsers, 'update',
                                          action_help='Update all libraries in the workspace')
