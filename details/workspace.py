@@ -479,10 +479,11 @@ class Workspace(object):
         status = add_command_line_action(subparsers, 'status',
                                          action_help=
                                          'Show status of all repositories in the workspace')
+        add_common_flags(status)
         status.add_argument('--detailed', '-d',
                             action='store_true',
                             help='Show detailed status of all repositories in the workspace')
-        status.add_argument('--raw', '-r',
+        status.add_argument('--raw', '-R',
                             action='store_true',
                             help='Show raw output from underlying provider of all repositories' \
                                  ' in the workspace')
