@@ -43,7 +43,7 @@ class PackageInfo(object):
     def create_from_json_string(in_str):
         """ Create a PackageInfo object from a json string representation """
         data = json.loads(in_str)
-        deps = Dependency.create_from_list(data['dependencies']) 
+        deps = Dependency.create_from_list(data['dependencies'])
         options = None
         build = None
         if 'options' in data:

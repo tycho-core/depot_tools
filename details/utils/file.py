@@ -87,7 +87,7 @@ def copy_file(bin_dir, src, dst_dir):
     dst_path = os.path.join(dst_dir, os.path.basename(src))
     shutil.copyfile(src, dst_path)
 
-def extract_file(bin_dir, src, dst_dir):
+def extract_file(src, dst_dir):
     import zipfile
     #print("Extracting %s -> %s" % (src, dst_dir))
     if not os.path.exists(dst_dir):

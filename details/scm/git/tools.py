@@ -8,6 +8,9 @@
 # Imports
 #-----------------------------------------------------------------------------
 from details.utils.misc import execute
+from details.utils.file import extract_file, get_directory_tree
+import tempfile
+import uuid
 import re
 import os
 
@@ -48,6 +51,44 @@ def global_git_config():
         result_dict[match.group('key')] = match.group('value')
 
     return result_dict
+
+def get_archive(repo, treeish, path, outfile):
+    """ Runs git archive on a repo to get files without requiring cloning """
+    remote = '--remote=' + repo
+    exitcode, _, _ = execute('git', os.getcwd(), ['archive', remote, treeish, path, '-o', outfile])
+    return exitcode == 0
+
+def get_archive_file(repo, treeish, path):
+    """ Get a single file contents from a git repo.
+    Returns:
+        string : Contents if successful of None otherwise.
+    """
+    tar_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()) + '.zip')
+    res = get_archive(repo, treeish, path, tar_path)
+    contents = None
+    if res:
+        tar_dir = tar_path + '.dir'
+        os.mkdir(tar_dir)
+        import tarfile
+        tf = tarfile.TarFile(tar_path)
+        tf.extractall(tar_dir)
+        tf.close()
+        files = os.listdir(tar_dir)
+        if len(files) == 1:
+            with open(os.path.join(tar_dir, files[0]), 'r') as content_file:
+                contents = content_file.read()
+
+    if os.path.exists(tar_path):
+        os.remove(tar_path)
+
+    if os.path.exists(tar_dir):
+        tree = get_directory_tree(tar_dir)
+        tree.delete()
+
+    return contents
+
+
+
 
 #-----------------------------------------------------------------------------
 # Main

@@ -13,6 +13,7 @@ from details.package.package_binding import PackageBinding
 from details.package.package_info import PackageInfo
 from details.package.source.git.package import Package as GitPackage
 from details.scm.git.repo import Repo
+from details.scm.git.tools import get_archive_file
 from details.utils.url import Url
 from details.utils.misc import ensure_valid_pathname, log, vlog
 from copy import deepcopy
@@ -57,15 +58,12 @@ class Provider(ProviderBase):
         if not path.exists(self.temp_dir):
             makedirs(self.temp_dir)
 
-        # create temporary store to cache repositories for dependency checking
-        self.temp_repo_dir = path.join(self.temp_dir, 'repos')
-
-        if not path.exists(self.temp_repo_dir):
-            makedirs(self.temp_repo_dir)
-
     def make_pkg_url(self, pkg_name):
         """ Construct the URL that points to the package """
         return Url('%s/%s.git' % (str(self.host_url), pkg_name))
+
+    def make_pkg_ssh_url(self, pkg_name):
+        return 'git@%s:%s/%s.git' % (self.host_url.host, self.host_url.path, pkg_name)
 
     def find_package(self, pkg_name, pkg_version, check_valid, refresh):
         vlog('Looking for package %s-%s' % (pkg_name, pkg_version))
@@ -82,47 +80,21 @@ class Provider(ProviderBase):
         vlog('Found package %s-%s' % (pkg_name, pkg_version))
         return GitPackage(self, pkg_name, pkg_version)
 
-    #TODO: try using git archive --remote=git@gitlab.com:tychohub-core/depot_tools.git HEAD tyworkspace.info
-    #      to avoid cloning the entire package.
     def get_package_info(self, pkg, refresh=True):
-        # check to see if we have cached the info for this package. If not
-        # then we need to sync the entire repository so we can get at them. Would be ideal
-        # to not need to do this....
+        # get only the typackage.info file from the remote repository
         vlog('Getting package info for %s-%s (refresh=%s)' % (pkg.name, pkg.version, str(refresh)))
-        key = '%s-%s' % (pkg.name, pkg.version)        
+        key = '%s-%s-%s' % (self.host, pkg.name, pkg.version)
 
-        cached_pkg_info = self.__get_cached_package_info(pkg)
+        json = self.context.cache.load_from_cache(key)
+        if not json:
+            url = self.make_pkg_ssh_url(pkg.name)
+            json = get_archive_file(url, pkg.version, 'typackage.info')
+            self.context.cache.save_to_cache(json, key, 8 * 60 * 60, 0.25)
+        return PackageInfo.create_from_json_string(json)
 
-        if not cached_pkg_info or (refresh and not key in self.__packages_updated):
-            vlog('Caching packing info...')
-            cached_pkg = pkg
-            cache_dir = self.__get_package_cache_dir(cached_pkg)
-            bound_pkg = PackageBinding(cached_pkg, cache_dir)
-            if bound_pkg.is_installed():
-                if refresh:
-                    bound_pkg.update()
-                    self.__packages_updated.add(key)
-            else:
-                bound_pkg.checkout()
-
-            cached_pkg_info = self.__get_cached_package_info(cached_pkg)
-
-        if not cached_pkg_info:
-            raise PackageInfoException(self, pkg.name, pkg.version, '')
-
-        return cached_pkg_info        
-      
     def __temp_path(self, rel_path):
         """ returns the path to our temporary file storage """
         return path.join(self.temp_dir, rel_path)
-
-    def __temp_repo_path(self, rel_path):
-        """ returns the path to our temporary repository storage """
-        return path.join(self.temp_repo_dir, rel_path)
-
-    def __get_package_cache_dir(self, pkg):
-        """ Returns the directory to use for caching the packages repo """
-        return self.__temp_repo_path('%s_%s' % (pkg.name, pkg.version))
 
     def __make_remote_repo(self, pkg_name, local_dir):
         """ Returns a Repo object to the remote repository """
@@ -133,55 +105,6 @@ class Provider(ProviderBase):
             remote_url.password = self.password
             anonymous = False
         return Repo(self.context, remote_url, local_dir, anonymous=anonymous)
-
-    @staticmethod
-    def __clean_package_repo_cache(cache_dir):
-        """ Clear out the cached version of this repo if it exists """
-        if os.path.exists(cache_dir):
-            root = futils.get_directory_tree(cache_dir)
-            if root:
-                root.delete()
-                os.remove(cache_dir)
-
-    def __check_package_repo_cache(self, pkg_name, cache_dir):
-        """ Returns true if the passed cache directory appears intact """
-        # check path exists and it is a directory
-        if not path.exists(cache_dir) or not path.isdir(cache_dir):
-            return False
-
-        # check that it is a valid git repository
-        cache_repo = self.__make_remote_repo(pkg_name, cache_dir)
-        if not cache_repo.is_valid_working_copy():
-            return False
-
-        return True
-
-    def __get_cached_package_info(self, pkg):
-        """ check the dependency cache for this package """
-        cache_dir = self.__get_package_cache_dir(pkg)
-
-        if cache_dir in self.__package_info_cache:
-            return self.__package_info_cache[cache_dir]
-
-        if not self.__check_package_repo_cache(pkg.name, cache_dir):
-            Provider.__clean_package_repo_cache(cache_dir)
-            return None
-
-        # get the dependency file
-        dep_file = os.path.join(cache_dir, self.context.package_info_filename)
-        if not os.path.exists(dep_file):
-            return None
-
-        pkg_info = PackageInfo.create_from_json_file(dep_file)
-        self.__package_info_cache[cache_dir] = pkg_info
-        
-        return pkg_info
-
-    def __cache_dependencies(self, pkg):
-        """ Cache the dependencies for the passed package locally """
-        cache_dir = self.__get_package_cache_dir(pkg)
-        cache_repo = Repo(cache_dir)
-        cache_repo.clone_branch(pkg.remote_url, pkg.version)
 
         
 

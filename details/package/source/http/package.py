@@ -81,7 +81,7 @@ class Package(PackageBase):
 
     def __extract_zip(self, src, dst):
         """ Extract a zip file """
-        futils.extract_file('', src, dst)    
+        futils.extract_file(src, dst)
 
     def update(self, local_dir):
         """
