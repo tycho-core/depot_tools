@@ -78,12 +78,12 @@ def get_archive_file(repo, treeish, path):
             with open(os.path.join(tar_dir, files[0]), 'r') as content_file:
                 contents = content_file.read()
 
-    if os.path.exists(tar_path):
-        os.remove(tar_path)
+        if os.path.exists(tar_path):
+            os.remove(tar_path)
 
-    if os.path.exists(tar_dir):
-        tree = get_directory_tree(tar_dir)
-        tree.delete()
+        if os.path.exists(tar_dir):
+            tree = get_directory_tree(tar_dir)
+            tree.delete()
 
     return contents
 
