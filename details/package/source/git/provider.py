@@ -37,7 +37,6 @@ class Provider(ProviderBase):
             raise MissingParam(self, 'host')
 
         self.host = params['host']
-        self.host_url = Url(self.host)
         self.username = None
         self.password = None
         self.anonymous = False
@@ -60,10 +59,7 @@ class Provider(ProviderBase):
 
     def make_pkg_url(self, pkg_name):
         """ Construct the URL that points to the package """
-        return Url('%s/%s.git' % (str(self.host_url), pkg_name))
-
-    def make_pkg_ssh_url(self, pkg_name):
-        return 'git@%s:%s/%s.git' % (self.host_url.host, self.host_url.path, pkg_name)
+        return '%s/%s.git' % (str(self.host), pkg_name)
 
     def find_package(self, pkg_name, pkg_version, check_valid, refresh):
         vlog('Looking for package %s-%s' % (pkg_name, pkg_version))
@@ -87,7 +83,7 @@ class Provider(ProviderBase):
 
         json = self.context.cache.load_from_cache(key)
         if not json:
-            url = self.make_pkg_ssh_url(pkg.name)
+            url = self.make_pkg_url(pkg.name)
             json = get_archive_file(url, pkg.version, 'typackage.info')
             self.context.cache.save_to_cache(json, key, 8 * 60 * 60, 0.25)
         return PackageInfo.create_from_json_string(json)

@@ -3,9 +3,7 @@
         "name": "tycore",
         "provider": "git",
         "provider_params": {
-            "host": "https://gitlab.com/tychohub-core",
-            "username": "tycho-tools",
-            "password": "yvLsV_2TnGQ2HSnq2Uh2"
+            "host": "git@gitlab.com:tychohub-core"
         },
         "query_interface": "gitlab",
         "query_interface_params": {
@@ -18,9 +16,7 @@
         "name": "tythirdparty",
         "provider": "git",
         "provider_params": {
-            "host": "https://gitlab.com/tychohub-thirdparty",
-            "username": "tycho-tools",
-            "password": "yvLsV_2TnGQ2HSnq2Uh2"
+            "host": "git@gitlab.com:tychohub-thirdparty"
         },
         "query_interface": "gitlab",
         "query_interface_params": {
@@ -33,9 +29,7 @@
         "name": "tyapps",
         "provider": "git",
         "provider_params": {
-            "host": "https://gitlab.com/tychohub-apps",
-            "username": "tycho-tools",
-            "password": "yvLsV_2TnGQ2HSnq2Uh2"
+            "host": "git@gitlab.com:tychohub-apps"
         },
         "query_interface": "gitlab",
         "query_interface_params": {
@@ -48,9 +42,7 @@
         "name": "tysandbox",
         "provider": "git",
         "provider_params": {
-            "host": "https://gitlab.com/tychohub-sandbox",
-            "username": "tycho-tools",
-            "password": "yvLsV_2TnGQ2HSnq2Uh2"
+            "host": "git@gitlab.com:tychohub-sandbox"
         },
         "query_interface": "gitlab",
         "query_interface_params": {
@@ -63,9 +55,7 @@
         "name": "tybuildtools",
         "provider": "git",
         "provider_params": {
-            "host": "https://gitlab.com/tychohub-buildtools",
-            "username": "tycho-tools",
-            "password": "yvLsV_2TnGQ2HSnq2Uh2"
+            "host": "git@gitlab.com:tychohub-buildtools"
         },
         "query_interface": "gitlab",
         "query_interface_params": {
