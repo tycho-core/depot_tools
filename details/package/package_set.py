@@ -30,28 +30,28 @@ class PackageSet(object):
         self.__conflicted_dependencies = None
 
     @staticmethod
-    def create_from_dependency(context, root_dep, check_valid, refresh_dependencies):
+    def create_from_dependency(context, mappings, root_dep, check_valid, refresh_dependencies):
         """ Create a package set from root dependency """
         dset = PackageSet(context)
-        dset.set_root_dependency(root_dep, check_valid, refresh_dependencies)
+        dset.set_root_dependency(mappings, root_dep, check_valid, refresh_dependencies)
         return dset
 
     @staticmethod
-    def create_from_dependency_string(context, in_str, check_valid=True, refresh_dependencies=True):
+    def create_from_dependency_string(context, mappings, in_str, check_valid=True, refresh_dependencies=True):
         """ Create a package set from a dependency string """
         dep = Dependency.create_from_string(in_str)
-        return PackageSet.create_from_dependency(context, dep, check_valid, refresh_dependencies)
+        return PackageSet.create_from_dependency(context, mappings, dep, check_valid, refresh_dependencies)
 
     @staticmethod
-    def create_from_dependency_file(context, file_path, check_valid=True, refresh_dependencies=True):
+    def create_from_dependency_file(context, mappings, file_path, check_valid=True, refresh_dependencies=True):
         """ Create a package set from a dependency file """
         dep = Dependency.create_from_file(file_path)
-        return PackageSet.create_from_dependency(context, dep, check_valid, refresh_dependencies)
+        return PackageSet.create_from_dependency(context, mappings, dep, check_valid, refresh_dependencies)
 
-    def set_root_dependency(self, root_dep, check_valid=True, refresh_dependencies=True):
+    def set_root_dependency(self, mappings, root_dep, check_valid=True, refresh_dependencies=True):
         """ Set the root dependencies """
         self.__root_dependency = root_dep
-        self.__build_dependency_graph(check_valid, refresh_dependencies)
+        self.__build_dependency_graph(mappings, check_valid, refresh_dependencies)
 
     def get_root_dependency(self):
         """ Get the root of the dependency graph for this set """
@@ -135,14 +135,18 @@ class PackageSet(object):
 
             log('NOT OK - There are conflicted dependencies')
 
+    def get_package_binding(self, mappings, pkg, refresh_dependencies=True):
+        """ Gets the binding for a single package to the local filesystem """
+        info = pkg.get_package_info(refresh_dependencies)
+        pkg_dir = '%s/%s' % (info.get_workspace_mapping(), pkg.name)
+        pkg_dir = mappings.apply_templates(pkg_dir)
+        pkg_dir = os.path.abspath(pkg_dir)
+        return PackageBinding(pkg, pkg_dir)
+
     def bind_packages(self, mappings, refresh_dependencies=True):
         """ Creates the bindings for all packages to the local filesystem """
         for pkg in self.__packages:
-            info = pkg.get_package_info(refresh_dependencies)
-            pkg_dir = '%s/%s' % (info.get_workspace_mapping(), pkg.name)
-            pkg_dir = mappings.apply_templates(pkg_dir)
-            pkg_dir = os.path.abspath(pkg_dir)
-            self.__package_bindings.append(PackageBinding(pkg, pkg_dir))
+            self.__package_bindings.append(self.get_package_binding(mappings, pkg, refresh_dependencies))
 
     def update_package_versions(self, force=False, preview=False):
         """ Ensure the local working copy versions correspond to workspace versions.
@@ -212,7 +216,7 @@ class PackageSet(object):
         """ Returns the local bindings for this package set. """
         return self.__package_bindings
 
-    def __build_dependency_graph(self, check_valid, refresh_dependencies):
+    def __build_dependency_graph(self, mappings, check_valid, refresh_dependencies):
         """ Get full graph of dependencies for this set of packages """
         package_dep_map = {}
 
@@ -229,7 +233,15 @@ class PackageSet(object):
             else:
                 pkg = self.__context.package_manager.get_package(in_dep.source, in_dep.name, in_dep.branch,
                                                                  check_valid, refresh_dependencies)
-                out_dep = pkg.get_dependencies(refresh_dependencies)
+
+                # Check to see if we already have a local version of this package. If we do
+                # then we need to get dependencies from that as they may have been modified
+                pkg_binding = self.get_package_binding(mappings, pkg)
+                if pkg_binding.is_installed():
+                    vlog('Get dependency for %s from local installed version' % (str(in_dep)))
+                    out_dep = Dependency.create_from_file(os.path.join(pkg_binding.get_package_root_dir(), self.__context.package_info_filename))
+                else:
+                    out_dep = pkg.get_dependencies(refresh_dependencies)
                 package_dep_map[in_dep_str] = out_dep
 
             # track current dependency for error reporting

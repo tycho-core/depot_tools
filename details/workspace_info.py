@@ -19,12 +19,6 @@ from copy import deepcopy
 class WorkspaceInfo(object):
     """ WorkspaceInfo """
 
-    class PackageBindingInfo(object):
-        """ """
-
-        def __init__(self):
-            """ Constructor """
-    
     def __init__(self, deps=None, workspace_mappings=None, options=None, bindings=None):
         """ Constructor """
         if deps:

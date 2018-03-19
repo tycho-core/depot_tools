@@ -89,6 +89,7 @@ class WorkspaceApp(object):
                 print('Workspace is ok')
             else:
                 print('Workspace is not ok')
+                return ConsoleApp.EXIT_FAILURE
         elif options.action == 'import':
             workspace = self.get_workspace(context, options)
 

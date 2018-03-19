@@ -28,6 +28,9 @@ from details.utils.misc import vlog, enable_verbose_log
 class ConsoleApp(object):
     """ ConsoleApp """
 
+    EXIT_FAILURE = 1
+    EXIT_SUCCESS = 0
+
     def abort(self):
         """ Abort the running application """
         print('User terminated')
@@ -146,7 +149,7 @@ class ConsoleApp(object):
             with open('output.cprof', 'wt+') as prof:
                 prof.write(s.getvalue());
 
-        return res
+        return ConsoleApp.EXIT_SUCCESS if res is None else res
 
 def configure_providers(context):
     from details.package.package_manager import PackageManager

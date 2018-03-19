@@ -53,11 +53,6 @@ class Workspace(object):
         # load workspace info file and setup mappings
         self.__info = WorkspaceInfo.create_from_json_file(self.get_workspace_info_path())
 
-        context.console.start_task('Processing dependencies')
-        self.__package_set = PackageSet.create_from_dependency(self.context,
-                                                               self.__info.get_dependencies(),
-                                                               check_valid, refresh_dependencies)
-        context.console.end_task()
 
         # setup the mappings
         mappings = WorkspaceMapping(self.root_dir)
@@ -75,6 +70,14 @@ class Workspace(object):
 
         # set on context
         self.context.filesystem_mappings = mappings
+
+        context.console.start_task('Processing dependencies')
+        self.__package_set = PackageSet.create_from_dependency(self.context,
+                                                               mappings,
+                                                               self.__info.get_dependencies(),
+                                                               check_valid, refresh_dependencies)
+        context.console.end_task()
+
 
         # bind the packages into the workspace
         self.__package_set.bind_packages(mappings, refresh_dependencies)
@@ -272,7 +275,7 @@ class Workspace(object):
         for status in pkg_status:
             print(status[1])
 
-        return workspace_corrupted
+        return not workspace_corrupted
 
     def update_git_ignore_file(self, dependencies):
         """ Update the .gitignore file for this workspace to include all dependencies """
@@ -497,8 +500,9 @@ class Workspace(object):
         add_common_flags(versions)
 
         # verify action
-        add_command_line_action(subparsers, 'verify',
+        verify = add_command_line_action(subparsers, 'verify',
                                 action_help='Verify that the workspace appears correct')
+        add_common_flags(verify)
 
         # foreach action
         #foreach = add_command_line_action(subparsers, 'foreach',
