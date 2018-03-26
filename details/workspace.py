@@ -163,7 +163,7 @@ class Workspace(object):
 
         return True
 
-    def get_local_worspace_info_path(self):
+    def get_local_workspace_info_path(self):
         """ Returns the path to the local workspace info file """
         return os.path.join(self.root_dir, self.context.local_workspace_info_filename)
 
@@ -184,11 +184,11 @@ class Workspace(object):
                 'status' : 'unknown'
                 })
         local_info.set_package_bindings(local_pkg_bindings)
-        local_info.save_to_json_file(self.get_local_worspace_info_path())
+        local_info.save_to_json_file(self.get_local_workspace_info_path())
 
     def load_local_workspace_info(self):
         """ Load the current state of the workspace """
-        path = self.get_local_worspace_info_path()
+        path = self.get_local_workspace_info_path()
         if not os.path.exists(path):
             return None
 
