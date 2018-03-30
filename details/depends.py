@@ -21,6 +21,12 @@ from details.utils.misc import log, vlog, log_banner, indent
 # Class
 #-----------------------------------------------------------------------------
 
+
+class CircularDependencyException(Exception):
+    def __init__(self, dep1, dep2):
+        msg = "Circular dependency detected %s -> %s -> %s" % (str(dep1), str(dep2), str(dep1))
+        super(CircularDependencyException, self).__init__(msg)
+
 class Dependency(object):
     """ Node in the dependency heirarchy """
 
@@ -120,14 +126,24 @@ class Dependency(object):
         return False
 
     def tree_contains(self, test_dep):
-        """ Returns true if the passed dependency exists anywhere in the tree of 
+        """ Returns true if the passed dependency exists anywhere in the tree of
         dependencies"""
         cur = self
         while cur != None:
             if cur.contains(test_dep):
-                return True
+                return cur
             cur = cur.parent
-        return False
+        return None
+
+    def parent_path_contains(self, test_dep):
+        """ Checks if dependency exists anywhere on the direct route from this dependency to the
+        root. If it does it returns the parent of the dependency otherwise None."""
+        cur = self.parent
+        while cur != None:
+            if cur == test_dep:
+                return cur.parent
+            cur = cur.parent
+        return None
 
     def contains_project(self, name):
         """ Returns true if this dependency contains a project of the passed name """
@@ -184,7 +200,7 @@ class Dependency(object):
 
     def flatten_dependencies_by_name(self):
         """
-        Build a dictionary of all library dependencies by name 
+        Build a dictionary of all library dependencies by name
         
             Args:
                 root(Dependency) : Root dependency object
@@ -403,6 +419,10 @@ class Dependency(object):
             new_deps = dep_func(cur_child)
 
             for new_child in new_deps.children:
+                # check for circular dependency
+                enode = self.parent_path_contains(new_child)
+                if enode:
+                    raise CircularDependencyException(new_child, cur_child)
                 cur_child.add_child(new_child)
                 vlog('Adding child(%s) to parent(%s)' % (new_child, cur_child), tabs=depth)
 
