@@ -224,7 +224,7 @@ class PackageSet(object):
             """ Retrieve package dependencies """
             # track current dependency for error reporting
             self.__context.current_dependency = in_dep
-            self.__context.console.update_task('Checking package %s' % (str(in_dep)))
+            #self.__context.console.update_task('Checking package %s' % (str(in_dep)))
 
             in_dep_str = str(in_dep)
             out_dep = None
