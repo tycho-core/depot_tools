@@ -1,2 +1,5 @@
 cmake_minimum_required (VERSION 2.8)
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/tyworkspace.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/tyworkspace.cmake")
+endif()
 include("tycho/lib/build/Workspace.cmake")

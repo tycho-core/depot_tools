@@ -22,18 +22,25 @@ class WorkspaceMapping(object):
     """ This handles mapping packages into the workspace filesystem """
     
     def __init__(self, root_dir):
-        """ Constructor """    
+        """ Constructor """
         self.__root_dir = utils.ensure_trailing_slash(root_dir)
         self.__template_params = {}
         self.__template_engine = TemplateEngine(None)
-        
+
+    def get_all_directories(self):
+        """ Returns an array of full paths to all the mapping directories """
+        result = []
+        for tdir in six.itervalues(self.__template_params):
+            result.append(self.apply_templates(tdir))
+        return result
+
     def apply_templates(self, path):
         """ Apply templates to the given path and return a absolute path """
         in_str = path
         if not os.path.isabs(path):
             in_str = '%s%s' % (self.__root_dir, path)
         params = self.__flatten_template_params()
-        return self.__template_engine.expand_template_string(params, in_str)
+        return os.path.normpath(self.__template_engine.expand_template_string(params, in_str))
         
     def load_templates_from_json_string(self, in_str):
         """ Load list of mapping templates from a json string """
@@ -47,7 +54,7 @@ class WorkspaceMapping(object):
             contents = template_file.read()
             self.load_templates_from_json_string(contents)
         finally:
-            template_file.close()                
+            template_file.close()
 
     def load_templates_from_dict(self, templates):
         """ Load list of templates from a python dictionary """
@@ -55,7 +62,7 @@ class WorkspaceMapping(object):
         for key, val in six.iteritems(templates):
             self.__template_params[key] = val
 
-            
+
     def find_file(self, search_dir, search_file, extensions=None):
         """ Search for a file in the mapped directory
 
