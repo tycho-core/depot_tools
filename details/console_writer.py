@@ -103,7 +103,7 @@ class ConsoleWriter(object):
         """ Overwrite the last line written to the output """
 
         if not self.__animate:
-            self.write('\n' + line);
+            self.write('\n' + line)
             return
 
         # find longest matching substring between current and new line so

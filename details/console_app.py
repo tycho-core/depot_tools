@@ -47,7 +47,7 @@ class ConsoleApp(object):
         self.app = app
 
         # intercept kill signals from the user and clean nicely
-        signal.signal(signal.SIGINT, lambda signal, frame: self.abort());
+        signal.signal(signal.SIGINT, lambda signal, frame: self.abort())
 
         # setup main context
         self.context = Context()
@@ -55,8 +55,8 @@ class ConsoleApp(object):
 
         # setup command line args
         self.parser = argparse.ArgumentParser(prog=app_name)
-        self.parser.add_argument('--verbose', '-v', 
-                                 action='store_true', 
+        self.parser.add_argument('--verbose', '-v',
+                                 action='store_true',
                                  help='Enable verbose logging')
 
         self.parser.add_argument('--debug', '-d',
@@ -147,7 +147,7 @@ class ConsoleApp(object):
             ps.print_stats()
             sys.stderr.write(s.getvalue())
             with open('output.cprof', 'wt+') as prof:
-                prof.write(s.getvalue());
+                prof.write(s.getvalue())
 
         return ConsoleApp.EXIT_SUCCESS if res is None else res
 
