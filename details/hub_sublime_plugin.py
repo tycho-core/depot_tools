@@ -158,7 +158,7 @@ class TyFormatFileCommand(sublime_plugin.WindowCommand):
         print(input_file)
         file_type = Formatter.get_file_type(input_file)
         if file_type == 'c++':
-            fmt = formatter(context)
+            fmt = Formatter(context)
             return fmt.format_file_inplace(input_file, silent=True)         
 
         sublime.status_message("Unknowm file type (%s)" % (os.path.splitext(input_file)[1]))
