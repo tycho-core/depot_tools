@@ -319,20 +319,38 @@ class Workspace(object):
         return os.path.join(self.root_dir, self.context.workspace_info_filename)
 
 
-    def foreach(self, args):
+    def foreach(self, provider, args):
         """
         Execute a process in the root of all dependent projects
 
         Args:
-            args(list) : Argument list to use. i.e. ['git', 'status']
+            provider(string) : Provider type to run the command for or None for all.
+            args(list)       : Argument list to use. i.e. ['git', 'status']
         """
-        # root = self.get_dependency_graph(refresh=False)
-        # deps = root.flatten_dependencies()
-        # for child in deps:
-        #     cmd = args
-        #     cwd = os.path.join(self.root_dir, child.name)
-        #     process = subprocess.Popen(cmd, cwd=cwd)
-        #     process.wait()
+        if len(args) == 0:
+            return
+        from utils.misc import execute
+        results = []
+        console = self.context.console
+        task_name = ' '.join(args)
+        console.start_task(task_name)
+        for binding in self.__package_set.get_package_bindings():
+            if provider is not None and provider != binding.get_package().provider.name:
+                continue
+            console.update_task(binding.get_package().name)
+            results.append((binding, execute(args[0], binding.get_package_root_dir(), args[1:], capture=True)))
+        console.end_task()
+
+        # display report
+        for result in results:
+            console.write_line('---------------------------------------------------')
+            console.write_line(task_name + ' - ' + result[0].get_package().name)
+            console.write_line('---------------------------------------------------')
+            console.write_line(result[1][1])
+            if result[1][0] != 0:
+                console.write_line('FAILED')
+
+
 
     def show_branches(self):
         """
@@ -505,10 +523,13 @@ class Workspace(object):
         add_common_flags(verify)
 
         # foreach action
-        #foreach = add_command_line_action(subparsers, 'foreach',
-        #                                  action_help='Execute the remainder of the command line' \
-        #                                            ' within each dependent library\'s repository')
-        #foreach.add_argument('args', nargs=argparse.REMAINDER)
+        foreach = add_command_line_action(subparsers, 'foreach',
+                                          action_help='Execute the remainder of the command line' \
+                                                    ' within each dependent library\'s repository')
+        add_common_flags(foreach)
+        foreach.add_argument('--provider', '-p',
+                             action='store', help='Provider type to execute for, one of [git, http]')
+        foreach.add_argument('args', nargs=argparse.REMAINDER)
 
         # show command
         show = add_command_line_action(subparsers, 'show',

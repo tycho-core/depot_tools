@@ -119,7 +119,7 @@ class WorkspaceApp(object):
             elif options.action == 'update':
                 workspace.update(options.force, options.preview)
             elif options.action == 'foreach':
-                workspace.foreach(options.args)
+                workspace.foreach(options.provider, options.args)
             elif options.action == 'versions':
                 workspace.print_versions()
 
