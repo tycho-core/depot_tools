@@ -66,6 +66,7 @@ class HubApp(object):
                 context.console.start_task('Deleting cache contents @ ' + context.library_cache_path)
                 tree = get_directory_tree(context.library_cache_path)
                 tree.delete()
+                context.cache.clear()
                 context.console.end_task()
 
         return 0

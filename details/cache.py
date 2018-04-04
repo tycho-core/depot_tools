@@ -13,6 +13,7 @@ import os.path as path
 import random
 from os import makedirs
 from utils.misc import ensure_valid_pathname
+from details.utils.file import get_directory_tree
 
 #-----------------------------------------------------------------------------
 # Class
@@ -31,6 +32,11 @@ class Cache(object):
 
     def __make_cache_path(self, name):
         return path.join(self.__cache_dir, ensure_valid_pathname(name) + '.json')
+
+    def clear(self):
+        """ Delete everything from the cache directory """
+        tree = get_directory_tree(self.__cache_dir)
+        tree.delete()
 
     def load_from_cache(self, name):
         cache_path = self.__make_cache_path(name)
