@@ -1,0 +1,6 @@
+{
+	"name" : "package",
+	"description" : "Create a tycho package.",
+	"options" : {
+	}	
+}
