@@ -1,4 +1,5 @@
 @require(year, date)
+@include("py_file_header")
 @include("py_comment_line")
 # Darkstorm Library
 # Copyright (C) @{year} Martin Slater

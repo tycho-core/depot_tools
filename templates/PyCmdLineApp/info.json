@@ -1,0 +1,9 @@
+{
+	"name" : "pyapp",
+	"description" : "Create a python command line tool.",
+	"options" : {
+		"appname" : {
+			"description" : "Name of the command line applciation to create"
+		}
+	}	
+}
