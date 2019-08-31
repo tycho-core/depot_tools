@@ -47,9 +47,9 @@ class TheHub(object):
         repos = self.get_hub_projects()
         for repo in repos:            
             if existing_deps and existing_deps.project_exists(repo.name):
-                print '* ' + repo.name
+                print('* ' + repo.name)
             else:
-                print repo.name
+                print(repo.name)
 
     def pick_hub_project(self, existing_deps=None):
         """
@@ -73,12 +73,12 @@ class TheHub(object):
                     repos.append(repo)
                     
         if len(repos) == 0:
-            print 'All projects are existing dependencies'
+            print('All projects are existing dependencies')
             return None
                             
         num_repos = 0
         for repo in repos:            
-            print '%s : %s' % (num_repos, repo.name)
+            print('%s : %s' % (num_repos, repo.name))
             num_repos = num_repos + 1
                     
         while True:
@@ -92,7 +92,7 @@ class TheHub(object):
                 input_ok = False
                 
             if not input_ok:
-                print 'Invalid selection'
+                print('Invalid selection')
             else:
                 break
             
@@ -113,7 +113,7 @@ class TheHub(object):
         
         num_branches = 0
         for branch in branches:            
-            print '%s : %s' % (num_branches, branch.name)
+            print('%s : %s' % (num_branches, branch.name))
             num_branches = num_branches + 1
                     
         while True:
@@ -127,7 +127,7 @@ class TheHub(object):
                 input_ok = False
                 
             if not input_ok:
-                print 'Invalid selection'
+                print('Invalid selection')
             else:
                 break
         
@@ -146,8 +146,8 @@ class TheHub(object):
         project = self.pick_hub_project(existing_deps=existing_deps)
         if project == None:
             return None
-        print 'Selected %s' % (project.name)
-        print ''
+        print('Selected %s' % (project.name))
+        print('')
         branch = TheHub.pick_project_branch(project)
         return [project, branch]
     

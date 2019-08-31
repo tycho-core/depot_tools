@@ -79,7 +79,7 @@ class InitTools(object):
         if not os.path.exists(file_path):
             profile_file = open(file_path, 'w+')
             if profile_file == None:
-                print "failed"
+                print("failed")
 
                 return False
             profile_file.close()
@@ -150,7 +150,7 @@ class InitTools(object):
 
 
         if not InitTools.__embed_in_file(bashrc_path, ['source ' + script_path]):
-            print "Failed to install bash aliases"
+            print("Failed to install bash aliases")
             return False
 
         # on osx ensure there is a .bash_profile file to open the bash file
@@ -171,14 +171,14 @@ class InitTools(object):
 
         if sys.platform in ['win32']:
             if not self.__install_powershell_aliases():
-                print "Failed to install powershell aliases"
+                print("Failed to install powershell aliases")
             else:
-                print "Installed PowerShell aliases"
+                print("Installed PowerShell aliases")
 
         if self.__install_bash_aliases():
-            print "Installed bash aliases"
+            print("Installed bash aliases")
         else:
-            print "Failed to install bash aliases"
+            print("Failed to install bash aliases")
 
     def install_sublime_plugin(self):
         """

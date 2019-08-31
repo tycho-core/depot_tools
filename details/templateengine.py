@@ -60,7 +60,7 @@ class TemplateEngine(object):
         """
         return self.__get_project_params_path(dir) != None
 
-    def __get_project_params_path(self, directory):
+    def __get_project_params_path(self, directory):        
         # search up the tree from the passed directory looking for project options file
         while not os.path.exists(os.path.join(directory, self.context.project_options_name)):
             nextdir = os.path.dirname(directory)
@@ -82,7 +82,6 @@ class TemplateEngine(object):
             path = os.path.join(path, self.context.project_template_dir)
             if os.path.exists(path):
                 return path
-
         return None
 
     def __get_project_params(self, directory):

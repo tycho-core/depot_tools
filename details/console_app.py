@@ -14,7 +14,7 @@ import argparse
 import os.path
 import json
 import cProfile
-import StringIO
+import io
 import pstats
 import signal
 from functools import partial
@@ -141,7 +141,7 @@ class ConsoleApp(object):
 
         if self.options.profile:
             pr.disable()
-            s = StringIO.StringIO()
+            s = io.StringIO()
             sortby = 'cumulative'
             ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
             ps.print_stats()

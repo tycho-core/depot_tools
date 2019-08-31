@@ -12,7 +12,7 @@ import time
 import os.path as path
 import random
 from os import makedirs
-from utils.misc import ensure_valid_pathname
+from details.utils.misc import ensure_valid_pathname
 from details.utils.file import get_directory_tree
 
 #-----------------------------------------------------------------------------
