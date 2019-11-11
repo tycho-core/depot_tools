@@ -1,0 +1,8 @@
+@require(libname, libname_upper, libname_camel)
+
+{
+  "libname": "${libname}",
+  "libname_upper": "${libname_upper}",
+  "libname_camel": "${libname_camel}",
+  "lib_abi": "${libname_upper}_ABI"
+}
