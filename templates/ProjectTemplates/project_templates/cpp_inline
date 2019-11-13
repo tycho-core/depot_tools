@@ -1,23 +1,23 @@
-@require(libname, header_guard, lib_abi)
-@include("cpp_copyright_comment")
+@@require(libname, header_guard, lib_abi)
+@@include("cpp_copyright_comment")
 
 #ifdef _MSC_VER
 #pragma once
 #endif  // _MSC_VER
 
-#ifndef @{header_guard}
-#define @{header_guard}
+#ifndef @@{header_guard}
+#define @@{header_guard}
 
 namespace tycho
 {
-namespace @{libname}
+namespace @@{libname}
 {
 
-@def content():
-@end
-@content()
+@@def content():
+@@end
+@@content()
 	
 } // end namespace
 } // end namespace
 
-#endif // @{header_guard}
+#endif // @@{header_guard}

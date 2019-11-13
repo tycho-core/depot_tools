@@ -1,6 +1,6 @@
-@require(year, date, project_name_camel)
-@include("cpp_comment_line")
-// \@{project_name_camel} Library
+@@require(year, date, project_name_camel)
+@@include("cpp_comment_line")
+// @@{project_name_camel} Library
 //
-// Copyright (c) 2018 Martin A Slater (mslater@hellinc.net)
-@include("cpp_comment_line")
+// Copyright (c) 2018 Martin A Slater (mslater@@hellinc.net)
+@@include("cpp_comment_line")

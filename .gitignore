@@ -6,3 +6,4 @@ tools/
 tyworkspace.info.local
 .vscode
 tyworkspace.cmake
+tmp/

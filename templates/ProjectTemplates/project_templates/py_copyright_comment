@@ -1,8 +1,8 @@
-@require(year, date, project_name_camel)
-@include("py_file_header")
-@include("py_comment_line")
-# @{project_name_camel} Library
+@@require(year, date, project_name_camel)
+@@include("py_file_header")
+@@include("py_comment_line")
+# @@{project_name_camel} Library
 #
-# Copyright (c) 2018 Martin A Slater (mslater@hellinc.net)
+# Copyright (c) 2018 Martin A Slater (mslater@@hellinc.net)
 # SOFTWARE.
-@include("py_comment_line")
+@@include("py_comment_line")
