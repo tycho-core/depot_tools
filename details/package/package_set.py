@@ -237,7 +237,8 @@ class PackageSet(object):
                 # Check to see if we already have a local version of this package. If we do
                 # then we need to get dependencies from that as they may have been modified
                 pkg_binding = self.get_package_binding(mappings, pkg)
-                if pkg_binding.is_installed():
+                pkg_status = pkg_binding.local_filesystem_status()
+                if pkg_status.is_installed() and pkg_status.is_valid():                  
                     vlog('Get dependency for %s from local installed version' % (str(in_dep)))
                     out_dep = Dependency.create_from_file(os.path.join(pkg_binding.get_package_root_dir(), self.__context.package_info_filename))
                 else:
