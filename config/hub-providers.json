@@ -1,74 +1,61 @@
 [
-    {
-        "name": "tycore",
-        "provider": "git",
-        "provider_params": {
-            "host": "git@gitlab.com:tychohub-core"
-        },
-        "query_interface": "gitlab",
-        "query_interface_params": {
-            "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
-            "base_url": "https://gitlab.com",
-            "group": "tychohub-core"
-        }
+  {
+    "name": "tycore",
+    "provider": "git",
+    "provider_params": {
+      "host": "git@gitlab.com:tychohub-core"
     },
-    {
-        "name": "tythirdparty",
-        "provider": "git",
-        "provider_params": {
-            "host": "git@gitlab.com:tychohub-thirdparty"
-        },
-        "query_interface": "gitlab",
-        "query_interface_params": {
-            "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
-            "base_url": "https://gitlab.com",
-            "group": "tychohub-thirdparty"
-        }
-    },
-    {
-        "name": "tyapps",
-        "provider": "git",
-        "provider_params": {
-            "host": "git@gitlab.com:tychohub-apps"
-        },
-        "query_interface": "gitlab",
-        "query_interface_params": {
-            "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
-            "base_url": "https://gitlab.com",
-            "group": "tychohub-apps"
-        }
-    },
-    {
-        "name": "tysandbox",
-        "provider": "git",
-        "provider_params": {
-            "host": "git@gitlab.com:tychohub-sandbox"
-        },
-        "query_interface": "gitlab",
-        "query_interface_params": {
-            "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
-            "base_url": "https://gitlab.com",
-            "group": "tychohub-sandbox"
-        }
-    },
-    {
-        "name": "tybuildtools",
-        "provider": "git",
-        "provider_params": {
-            "host": "git@gitlab.com:tychohub-buildtools"
-        },
-        "query_interface": "gitlab",
-        "query_interface_params": {
-            "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
-            "base_url": "https://gitlab.com",
-            "group": "tychohub-buildtools"
-        }
-    },
-    {
-        "name": "pkg",
-        "provider": "http",
-        "provider_params": {
-            "host": "https://sourceforge.net/projects/acmehub/files/packages"
-        }
+    "query_interface": "gitlab",
+    "query_interface_params": {
+      "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
+      "base_url": "https://gitlab.com",
+      "group": "tychohub-core"
     }
+  },
+  {
+    "name": "tythirdparty",
+    "provider": "git",
+    "provider_params": {
+      "host": "git@gitlab.com:tychohub-thirdparty"
+    },
+    "query_interface": "gitlab",
+    "query_interface_params": {
+      "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
+      "base_url": "https://gitlab.com",
+      "group": "tychohub-thirdparty"
+    }
+  },
+  {
+    "name": "tyapps",
+    "provider": "git",
+    "provider_params": {
+      "host": "git@gitlab.com:tychohub-apps"
+    },
+    "query_interface": "gitlab",
+    "query_interface_params": {
+      "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
+      "base_url": "https://gitlab.com",
+      "group": "tychohub-apps"
+    }
+  },
+  {
+    "name": "tybuildtools",
+    "provider": "git",
+    "provider_params": {
+      "host": "git@gitlab.com:tychohub-buildtools"
+    },
+    "query_interface": "gitlab",
+    "query_interface_params": {
+      "auth_token": "yvLsV_2TnGQ2HSnq2Uh2",
+      "base_url": "https://gitlab.com",
+      "group": "tychohub-buildtools"
+    }
+  },
+  {
+    "name": "pkg",
+    "provider": "http",
+    "provider_params": {
+      "host": "https://sourceforge.net/projects/acmehub/files/packages"
+    }
+  }
 ]

@@ -20,25 +20,17 @@ import json
 
 class GitLabQueryInterface(ProviderQueryInterface):
     """ GitlabQueryInterface """
-    AllProjects = None
+    GitLabServer = None
     QueryCacheTime = 60 * 60 * 24  # 1 day
 
     class Project(ProjectBase):
         """ Gtihub project """
 
-        def __init__(self, owner, repo):
+        def __init__(self, owner, name, branches):
             """ Constructor """
-            super(GitLabQueryInterface.Project, self).__init__(owner, repo['name'])
-            self.__repo = repo
-
-        def get_repo(self):
-            """ Returns :
-                    GitHub.Repository : repository for this project
-            """
-            return self.__repo
-
-        def namespace(self):
-            return self.__repo['namespace']
+            super(GitLabQueryInterface.Project, self).__init__(owner, name)
+            self.name = name
+            self.branches = branches
 
     class Version(VersionBase):
         """ Github project version information """
@@ -57,18 +49,11 @@ class GitLabQueryInterface(ProviderQueryInterface):
         self.__group = dict_value_or_none(params, 'group')
         self.__cache_expiry = dict_value_or_default(params, 'cache_expiry', GitLabQueryInterface.QueryCacheTime)
         self.__cache_jitter = dict_value_or_default(params, 'cache_jitter', 0.25)
+        self.__projects = None
 
-        #TODO : Disabling SSL is not the best idea. Figure out why it is failing to verify (maybe selfsigned)
-        self.__gitlab = gitlab.Gitlab(host=self.__base_url, token=self.__auth_token, verify_ssl=True)
-
-        # only call the API once to get all projects and cache in a class static
-        if not GitLabQueryInterface.AllProjects:
-            projects = context.cache.load_from_cache('gitlab_provider_projects')
-            if projects:
-                GitLabQueryInterface.AllProjects = projects
-            else:
-                GitLabQueryInterface.AllProjects = [ project for project in self.__gitlab.getall(self.__gitlab.getprojects) ]
-                context.cache.save_to_cache(GitLabQueryInterface.AllProjects, 'gitlab_provider_projects', GitLabQueryInterface.QueryCacheTime)
+        if not GitLabQueryInterface.GitLabServer:
+            GitLabQueryInterface.GitLabServer = gitlab.Gitlab(self.__base_url, private_token=self.__auth_token)
+            GitLabQueryInterface.GitLabServer.auth()
 
     def get_display_name(self):
         """
@@ -84,13 +69,34 @@ class GitLabQueryInterface(ProviderQueryInterface):
         Returns:
             list(string)
         """
-        results = []
-        for gl_project in GitLabQueryInterface.AllProjects:
-            project = GitLabQueryInterface.Project(self, gl_project)
-            namespace = project.namespace()
-            if namespace['name'] == self.__group:
-                results.append(project)
-        return results
+        if not self.__projects:
+            cache_name = 'gitlab_provider_projects_{0}'.format(self.__group)
+            cache_objs = self.__context.cache.load_from_cache(cache_name)
+            if cache_objs:
+                self.__projects = [ 
+                    GitLabQueryInterface.Project(self, project['name'], project['branches']) 
+                        for project in cache_objs
+                    ]
+
+            if self.__projects:
+                return self.__projects
+            else:
+                self.__projects = []
+                gitlab = GitLabQueryInterface.GitLabServer
+                group = gitlab.groups.list(search=self.__group)
+                for group_project in group[0].projects.list():
+                    gl_project = gitlab.projects.get(group_project.id)
+                    gl_branches = [ branch.name for branch in gl_project.branches.list(all=True)]
+                    self.__projects.append(GitLabQueryInterface.Project(self, gl_project.name, gl_branches))
+
+                cache_objs = [ {
+                    'name': project.name,
+                    'branches': project.branches
+                } for project in self.__projects]
+
+                self.__context.cache.save_to_cache( 
+                    cache_objs, cache_name, GitLabQueryInterface.QueryCacheTime)
+        return self.__projects
 
     def get_project_versions(self, project):
         """
@@ -99,14 +105,7 @@ class GitLabQueryInterface(ProviderQueryInterface):
         Returns:
             list(Version)
         """
-        cache_name = 'gitlab_provider_versions_{0}_{1}'.format(self.__group, project.get_repo()['name'])
-        branches = self.__context.cache.load_from_cache(cache_name)
-        if not branches:
-            branches = [branch['name'] for branch in self.__gitlab.getbranches(project.get_repo()['id'])]
-            self.__context.cache.save_to_cache(branches, cache_name, self.__cache_expiry, self.__cache_jitter)
-
-        return [GitLabQueryInterface.Version(project, branch) for branch in branches]
-
+        return project.branches
 
 
 #-----------------------------------------------------------------------------
