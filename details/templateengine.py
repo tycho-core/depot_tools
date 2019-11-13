@@ -1,12 +1,12 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2014 Martin Slater
 # Created : Friday, 14 November 2014 11:05:56 AM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 import json
 import datetime
 import uuid
@@ -18,9 +18,10 @@ from wheezy.template.loader import FileLoader, DictLoader
 from details.utils.misc import vlog
 from details.utils.file import get_directory_tree
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class TemplateEngine(object):
     """ TemplateEngine """
@@ -39,7 +40,8 @@ class TemplateEngine(object):
         params = {}
         now = datetime.datetime.now()
         params['year'] = datetime.datetime.strftime(now, "%Y")
-        params['date'] = datetime.datetime.strftime(now, "%A, %d %B %Y %I:%M:%S %p")
+        params['date'] = datetime.datetime.strftime(
+            now, "%A, %d %B %Y %I:%M:%S %p")
         return params
 
     def __get_global_params(self):
@@ -60,11 +62,12 @@ class TemplateEngine(object):
         """
         return self.__get_project_params_path(dir) != None
 
-    def __get_project_params_path(self, directory):        
+    def __get_project_params_path(self, directory):
         # search up the tree from the passed directory looking for project options file
         while not os.path.exists(os.path.join(directory, self.context.project_options_name)):
             nextdir = os.path.dirname(directory)
-            vlog('Search : %s\\%s' % (directory, self.context.project_options_name))
+            vlog('Search : %s\\%s' %
+                 (directory, self.context.project_options_name))
             if directory == nextdir:
                 return None
             directory = nextdir
@@ -130,7 +133,7 @@ class TemplateEngine(object):
         input_string = require_string + input_string
 
         # set template engine
-        template_dict = {'input_string' : input_string}
+        template_dict = {'input_string': input_string}
         engine = Engine(
             loader=DictLoader(template_dict),
             extensions=[CoreExtension()]
@@ -176,9 +179,21 @@ class TemplateEngine(object):
         # load global template parameters
         params.update(self.__get_global_params())
 
+        # get list of all files in the library template directory
+        template_list = get_directory_tree(template.source).flatten()
+
         # template search paths. intialised here as we need to add per project directory to the
         # head of the list
         default_search_paths = []
+
+        # add the template paths first so if they contain files that are also in the common templates
+        # they will get loaded first
+        template_dirs = set()
+        for template_file in template_list:
+            template_dirs.add(os.path.dirname(template_file.absolute_path))
+
+        for template_dir in template_dirs:
+            default_search_paths.append(template_dir)
 
         # check whether we are in a project and configure per project settings
         if self.is_project_dir(output_dir):
@@ -186,15 +201,13 @@ class TemplateEngine(object):
             params.update(self.__get_project_params(output_dir))
 
             # project template search path
-            default_search_paths.append(self.__get_project_template_path(output_dir))
+            default_search_paths.append(
+                self.__get_project_template_path(output_dir))
 
         # add default search paths at the end
         default_search_paths.extend(self.context.common_template_paths)
 
         vlog(params)
-
-        # get list of all files in the library template directory
-        template_list = get_directory_tree(template.source).flatten()
 
         # keep track of all files we have created
         dest_paths = []
@@ -233,8 +246,9 @@ class TemplateEngine(object):
 
         return dest_paths
 
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     pass
