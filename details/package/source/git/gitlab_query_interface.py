@@ -51,10 +51,6 @@ class GitLabQueryInterface(ProviderQueryInterface):
         self.__cache_jitter = dict_value_or_default(params, 'cache_jitter', 0.25)
         self.__projects = None
 
-        if not GitLabQueryInterface.GitLabServer:
-            GitLabQueryInterface.GitLabServer = gitlab.Gitlab(self.__base_url, private_token=self.__auth_token)
-            GitLabQueryInterface.GitLabServer.auth()
-
     def get_display_name(self):
         """
         Returns:
@@ -82,6 +78,11 @@ class GitLabQueryInterface(ProviderQueryInterface):
                 return self.__projects
             else:
                 self.__projects = []
+
+                if not GitLabQueryInterface.GitLabServer:
+                    GitLabQueryInterface.GitLabServer = gitlab.Gitlab(self.__base_url, private_token=self.__auth_token)
+                    GitLabQueryInterface.GitLabServer.auth()
+
                 gitlab = GitLabQueryInterface.GitLabServer
                 group = gitlab.groups.list(search=self.__group)
                 for group_project in group[0].projects.list():
