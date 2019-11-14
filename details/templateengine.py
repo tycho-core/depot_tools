@@ -198,11 +198,15 @@ class TemplateEngine(object):
         # check whether we are in a project and configure per project settings
         if self.is_project_dir(output_dir):
             # load project template parameters
-            params.update(self.__get_project_params(output_dir))
+            proj_settings = self.__get_project_params(output_dir)
+
+            if proj_settings:
+                params.update(proj_settings)
 
             # project template search path
-            default_search_paths.append(
-                self.__get_project_template_path(output_dir))
+            template_path = self.__get_project_template_path(output_dir)
+            if template_path:
+                default_search_paths.append(template_path)
 
         # add default search paths at the end
         default_search_paths.extend(self.context.common_template_paths)
