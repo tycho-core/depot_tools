@@ -1,12 +1,12 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2015 Martin Slater
 # Created : Tuesday, 03 February 2015 11:44:42 AM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 from details.package.package_base import PackageBase
 from details.package.package_info import PackageInfo
 from details.depends import Dependency
@@ -14,16 +14,17 @@ from details.utils.misc import log
 import details.utils.file as futils
 import os.path
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Package(PackageBase):
     """ Package """
-    
+
     def __init__(self, provider, pkg_name, pkg_version):
-        super(Package, self).__init__(provider, pkg_name, pkg_version)   
-            
+        super(Package, self).__init__(provider, pkg_name, pkg_version)
+
     def get_package_info(self, refresh=True):
         """ Returns the info for this package """
         return self.provider.get_package_info(self, refresh)
@@ -43,36 +44,39 @@ class Package(PackageBase):
         if pkg_type == 'archive':
             archive_name = pkg_info.get_option('archive_name')
             assert archive_name != None
-            archive_path = provider.cache_package_file(self, archive_name, True)
+            archive_path = provider.cache_package_file(
+                self, archive_name, True)
             _, ext = os.path.splitext(archive_path)
 
             decompress_handlers = {
-                '.7z'  : self.__extract_7zip,
-                '.zip' : self.__extract_zip
+                '.7z': self.__extract_7zip,
+                '.zip': self.__extract_zip
             }
             if not ext in decompress_handlers:
-                print 'noext' 
+                print('noext')
                 return False
 
             self.provider.context.console.update_sub_task('Extracting')
             decompress_handlers[ext](archive_path, local_dir)
 
         # append version to packing info file and save
-        src_path = provider.cache_package_file(self, provider.context.package_info_filename, True)
+        src_path = provider.cache_package_file(
+            self, provider.context.package_info_filename, True)
         local_pkg_info = PackageInfo.create_from_json_file(src_path)
-        local_pkg_info.add_option('remote_version', provider.make_pkg_url(self.name, self.version))
-        this_version = Dependency(provider.source_name, self.name, self.version)
+        local_pkg_info.add_option(
+            'remote_version', provider.make_pkg_url(self.name, self.version))
+        this_version = Dependency(
+            provider.source_name, self.name, self.version)
         local_pkg_info.add_option('version', str(this_version))
-        dst_path = os.path.join(local_dir, provider.context.package_info_filename)
+        dst_path = os.path.join(
+            local_dir, provider.context.package_info_filename)
         local_pkg_info.save_to_json_file(dst_path)
         return True
 
-
-
     def __extract_7zip(self, src, dst):
         """ Extract a 7zip file """
-        path = self.provider.context.filesystem_mappings.find_file('@{ty_hub_bin_tools}/7zip', 
-                                                                   '7za', 
+        path = self.provider.context.filesystem_mappings.find_file('@{ty_hub_bin_tools}/7zip',
+                                                                   '7za',
                                                                    ['', '.exe'])
         if not path:
             return False
@@ -120,7 +124,8 @@ class Package(PackageBase):
         modifications = None
         raw_modifications = None
 
-        pkg_info_path = os.path.join(local_dir, self.provider.context.package_info_filename)
+        pkg_info_path = os.path.join(
+            local_dir, self.provider.context.package_info_filename)
         if os.path.exists(local_dir) and os.path.exists(pkg_info_path):
             installed = True
 
@@ -134,16 +139,18 @@ class Package(PackageBase):
                         version = dep.branch
                         valid = True
 
-        return PackageBase.Status(installed, valid, modified, version, 
+        return PackageBase.Status(installed, valid, modified, version,
                                   modifications, raw_modifications)
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def main():
     """ Main script entry point """
     pass
+
 
 if __name__ == "__main__":
     main()

@@ -1,12 +1,12 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2015 Martin Slater
 # Created : Thursday, 29 January 2015 11:05:37 AM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 from __future__ import print_function
 import sys
 import os
@@ -17,30 +17,34 @@ if sys.platform in ["win32", "cygwin"]:
     # workaround for http://bugs.python.org/issue17023
     os.environ['PATH'] = os.environ['PATH'].replace('"', '')
 
-    
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Constants
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 VERBOSE_LOG = False
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def enable_verbose_log():
     """ Enable verbose logging, useful for debugging """
     global VERBOSE_LOG
     VERBOSE_LOG = True
 
+
 def indent(num_tabs):
     """ Indent console output """
     for _ in range(num_tabs):
         sys.stdout.write("  ")
 
+
 def log(msg, tabs=0):
     """ Output log message to stdout """
     indent(tabs)
     print(msg)
+
 
 def vlog(msg, tabs=0):
     """ Output verbose log message to stdout """
@@ -48,15 +52,18 @@ def vlog(msg, tabs=0):
         indent(tabs)
         print(msg)
 
+
 def log_banner(msg):
     log('#---------------------------------------------------------------------')
     log('# ' + msg)
     log('#---------------------------------------------------------------------')
 
+
 def fatal_error(msg):
     """ Print message and quit """
     print("Error : " + msg)
     sys.exit(1)
+
 
 def get_script_dir():
     """ Get path this script lives in """
@@ -75,12 +82,14 @@ def ensure_valid_pathname(in_str):
             res += '_'
     return res
 
+
 def ensure_trailing_slash(in_str, sep=os.path.sep):
     """ ensure there is a trailing slash on the end of the string. Will except unix and windows
         seperators and if one is not present will append os.path.sep"""
     if len(in_str) > 0 and in_str[-1] != '/' and in_str[-1] != '\\':
         in_str += sep
     return in_str
+
 
 def add_command_line_action(parent_parser, name, action_help, subaction=False):
     """ Add a command line sub parse for and action """
@@ -91,6 +100,7 @@ def add_command_line_action(parent_parser, name, action_help, subaction=False):
     else:
         parser.set_defaults(action=name)
     return parser
+
 
 def symlink(source, link_name):
     """ Create a simlink to a file. This version works in windows as well """
@@ -105,6 +115,7 @@ def symlink(source, link_name):
         flags = 1 if os.path.isdir(source) else 0
         if csl(link_name, source, flags) == 0:
             raise ctypes.WinError()
+
 
 def execute(executable, root_dir, args, capture=True):
     """ Create a new process and optionally capture its ouput """
@@ -130,7 +141,7 @@ def execute(executable, root_dir, args, capture=True):
         while True:
             retcode = process.poll()
             line = process.stdout.readline()
-            stdout_lines += line
+            stdout_lines += line.decode('utf-8')
             if retcode is not None:
                 break
 
@@ -155,11 +166,13 @@ def dict_value_or_none(in_dict, name):
         return in_dict[name]
     return None
 
+
 def dict_value_or_default(in_dict, name, default):
     """ Return value if the key exists or None otherwise """
     if name in in_dict:
         return in_dict[name]
     return default
+
 
 def dict_or_default(in_dict):
     """ Returns the passed dictionary if not None or an empty one if it is """
@@ -167,14 +180,16 @@ def dict_or_default(in_dict):
         return in_dict
     return {}
 
+
 def list_or_default(in_list):
     """ Returns the passed list if not None or an empty one if it is """
     if in_list:
         return in_list
     return {}
 
+
 def print_table(rows, delimiters, out_stream):
-    if rows is  None or len(rows) == 0:
+    if rows is None or len(rows) == 0:
         return
 
     num_cols = len(rows[0])
@@ -197,13 +212,15 @@ def print_table(rows, delimiters, out_stream):
             out_stream.write(delim)
         out_stream.write('\n')
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def main():
     """ Main script entry point """
     pass
+
 
 if __name__ == "__main__":
     main()

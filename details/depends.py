@@ -1,15 +1,15 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2014 Martin Slater
 # Created : Wednesday, 10 December 2014 10:28:08 AM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#TODO : rewrite print_depends using get_depends_info results
-#TODO : add conflict information to get_depends_info results
+# TODO : rewrite print_depends using get_depends_info results
+# TODO : add conflict information to get_depends_info results
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 from __future__ import print_function
 import os
 import re
@@ -17,15 +17,17 @@ import sys
 import six
 from details.utils.misc import log, vlog, log_banner, indent
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 class CircularDependencyException(Exception):
     def __init__(self, dep1, dep2):
-        msg = "Circular dependency detected %s -> %s -> %s" % (str(dep1), str(dep2), str(dep1))
+        msg = "Circular dependency detected %s -> %s -> %s" % (
+            str(dep1), str(dep2), str(dep1))
         super(CircularDependencyException, self).__init__(msg)
+
 
 class Dependency(object):
     """ Node in the dependency heirarchy """
@@ -60,11 +62,11 @@ class Dependency(object):
         for string in in_list:
             match = re.match(Dependency.__regex, string)
             if match:
-                obj = Dependency(match.group('src'), match.group('project'), match.group('version'))
+                obj = Dependency(match.group('src'), match.group(
+                    'project'), match.group('version'))
                 dependencies.add_child(obj)
 
         return dependencies
-
 
     @staticmethod
     def create_from_file(path, suppress_error_msg=False):
@@ -85,29 +87,29 @@ class Dependency(object):
         self.source = source
         # repository name
         self.name = name
-        # branch name 
+        # branch name
         self.branch = branch
         # parent dependency
         self.parent = None
         # child dependencies
         self.children = []
-        
+
     def save_to_file(self, path):
         """ Save dependencies to a file """
         dep_file = open(path, 'w')
         for dep_file in self.children:
-            dep_file.write('%s\n'  % (dep_file))
+            dep_file.write('%s\n' % (dep_file))
         dep_file.close()
 
     def __repr__(self):
         """ Returns string representation of the dependency """
         return ('%s:%s:%s') % (self.source, self.name, self.branch)
-    
+
     def __eq__(self, other):
         """ Return True if dependency is identical to other """
         if other is None:
             return False
-        return (self.name == other.name and 
+        return (self.name == other.name and
                 self.source == other.source and self.branch == other.branch)
 
     def __ne__(self, other):
@@ -165,7 +167,7 @@ class Dependency(object):
         for dep in self.children:
             if dep.name == name:
                 return True
-            
+
         return False
 
     def get_root_dependency(self):
@@ -180,7 +182,7 @@ class Dependency(object):
         while node != None and node.parent != None:
             node = node.parent
 
-        return node 
+        return node
 
     def get_dependency_chain(self):
         """
@@ -201,16 +203,16 @@ class Dependency(object):
     def flatten_dependencies_by_name(self):
         """
         Build a dictionary of all library dependencies by name
-        
+
             Args:
                 root(Dependency) : Root dependency object
-                
+
             Returns:
                 dictionary::
                     {
                         'name' : [ Dependency(), Dependency() ]
                     }
-                    
+
         """
 
         name_dict = {}
@@ -218,36 +220,35 @@ class Dependency(object):
             self.__flatten_dependencies_aux(name_dict, node)
         return name_dict
 
-    
     def flatten_dependencies(self):
         """
         Return:
             list: List of depends.Dependency objects.
-            
+
         Note:
             In case of a conflict (multiple referenced branches) it will include the first
             one found 
         """
         flattened_deps_by_name = self.flatten_dependencies_by_name()
         dependencies = []
-        for _, refs in flattened_deps_by_name.iteritems():
+        for _, refs in flattened_deps_by_name.items():
             for ref in refs:
                 if not ref in dependencies:
                     dependencies.append(ref)
                     continue
         return dependencies
-                
+
     def __flatten_dependencies_aux(self, name_dict, node):
         """
         Helper function for Workspace.flatten_dependencies
-        """             
+        """
         if node.name in name_dict:
             name_dict[node.name].append(node)
         else:
             name_dict[node.name] = [node]
-            
+
         for child in node.children:
-            self.__flatten_dependencies_aux(name_dict, child)        
+            self.__flatten_dependencies_aux(name_dict, child)
 
     def get_dependency_conflicts(self):
         """
@@ -256,7 +257,7 @@ class Dependency(object):
 
         Args:
             root(Dependency) : Root dependency object
-            
+
         Returns:
             dictionary::
                 {
@@ -265,11 +266,11 @@ class Dependency(object):
         """
         conflicts = {}
         projects = self.flatten_dependencies_by_name()
-        
+
         # check that under each library all uses reference the same source and branch
-        for project, refs in projects.iteritems():
+        for project, refs in projects.items():
             match = None
-                
+
             for ref in refs:
                 if match == None:
                     match = ref
@@ -278,13 +279,13 @@ class Dependency(object):
                     if match != ref:
                         conflicts[project] = refs
                         break
-    
+
         return conflicts
 
     def print_dependencies(self, node=None, depth=0):
         """
         Print dependency graph to stdout.
-        
+
         Args:
             node(tydepends.Dependency) : Root dependency
             depth(int) : traversal depth
@@ -302,7 +303,7 @@ class Dependency(object):
             List of all dependent projects and which branch they use
             Dependency graph
             Dependency conflicts if they exist
-        
+
         Args:
             refresh(Bool)  : True to refresh dependencies from the network (this may be slow)
         """
@@ -310,10 +311,9 @@ class Dependency(object):
         flattened_deps = self.flatten_dependencies_by_name()
         conflicted_deps = self.get_dependency_conflicts()
 
-        
         # print list of all dependent projects
         log_banner('Dependent projects')
-        for project, refs in flattened_deps.iteritems():
+        for project, refs in flattened_deps.items():
             visited_deps = set()
             branches = ""
             for ref in refs:
@@ -400,7 +400,6 @@ class Dependency(object):
 
         return output
 
-
     def build_dependency_graph(self, refresh=False, depth=0, dep_func=None):
         """
         Build the dependency graph for this dependency. This will burrow through all
@@ -424,15 +423,18 @@ class Dependency(object):
                 if enode:
                     raise CircularDependencyException(new_child, cur_child)
                 cur_child.add_child(new_child)
-                vlog('Adding child(%s) to parent(%s)' % (new_child, cur_child), tabs=depth)
+                vlog('Adding child(%s) to parent(%s)' %
+                     (new_child, cur_child), tabs=depth)
 
-            cur_child.build_dependency_graph(refresh=refresh, depth=depth+1, dep_func=dep_func)
+            cur_child.build_dependency_graph(
+                refresh=refresh, depth=depth+1, dep_func=dep_func)
 
         return self
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Functions
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def print_conflicts(conflicted_deps):
     """ Print all dependency conflicts and their dependency chain to stdout """
@@ -459,7 +461,6 @@ def print_conflicts(conflicted_deps):
             first = False
             cur_ref = cur_ref + 1
 
-
         log('%s using branches %s due to %s\n' % (project, branches, projects))
         for ref in refs:
             # write out each reference from root to the reference
@@ -478,9 +479,10 @@ def print_conflicts(conflicted_deps):
                 depth = depth + 1
             log('')
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def main():
     """ Main script entry point """
@@ -490,6 +492,7 @@ def main():
         print(dep.children)
     else:
         print('Could not load : ' + sys.argv[1])
+
 
 if __name__ == "__main__":
     main()
