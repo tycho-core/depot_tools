@@ -1,4 +1,4 @@
-@require(libname, libname_upper, libname_camel)
+@@require(libname, libname_upper, libname_camel)
 
 {
   "libname": "${libname}",

@@ -1,12 +1,12 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2015 Martin Slater
 # Created : Thursday, 29 January 2015 03:20:47 PM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 import json
 import six
 from details.templateengine import TemplateEngine
@@ -14,13 +14,14 @@ import details.utils.misc as utils
 import os
 import os.path
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class WorkspaceMapping(object):
     """ This handles mapping packages into the workspace filesystem """
-    
+
     def __init__(self, root_dir):
         """ Constructor """
         self.__root_dir = utils.ensure_trailing_slash(root_dir)
@@ -41,7 +42,7 @@ class WorkspaceMapping(object):
             in_str = '%s%s' % (self.__root_dir, path)
         params = self.__flatten_template_params()
         return os.path.normpath(self.__template_engine.expand_template_string(params, in_str))
-        
+
     def load_templates_from_json_string(self, in_str):
         """ Load list of mapping templates from a json string """
         templates = json.loads(in_str)
@@ -49,7 +50,7 @@ class WorkspaceMapping(object):
 
     def load_templates_from_json_file(self, path):
         """ Load list of mapping templates from a json file """
-        try: 
+        try:
             template_file = open(path, 'r')
             contents = template_file.read()
             self.load_templates_from_json_string(contents)
@@ -59,9 +60,8 @@ class WorkspaceMapping(object):
     def load_templates_from_dict(self, templates):
         """ Load list of templates from a python dictionary """
         # add new templates and replace existing ones
-        for key, val in six.iteritems(templates):
+        for key, val in templates.items():
             self.__template_params[key] = val
-
 
     def find_file(self, search_dir, search_file, extensions=None):
         """ Search for a file in the mapped directory
@@ -87,15 +87,13 @@ class WorkspaceMapping(object):
                         return os.path.join(dirpath, filename)
         return None
 
-
-
     def __flatten_template_params(self):
         """ Returns copy of template params that have been recursively applied to each other"""
         result = {}
-        for key, val in six.iteritems(self.__template_params):
+        for key, val in self.__template_params.items():
             old_val = val
-            while True:                
-                new_val = self.__template_engine.expand_template_string(self.__template_params, 
+            while True:
+                new_val = self.__template_engine.expand_template_string(self.__template_params,
                                                                         old_val)
                 if new_val == old_val:
                     result[key] = new_val
@@ -104,13 +102,15 @@ class WorkspaceMapping(object):
 
         return result
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def main():
     """ Main script entry point """
     pass
+
 
 if __name__ == "__main__":
     main()

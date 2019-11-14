@@ -4,9 +4,6 @@
   "options": {
     "project_name": {
       "description": "Name of the project to create (in snake case)"
-    },
-    "libname": {
-      "description": "Name of the library to create (in snake case)"
     }
-  }
+ }
 }

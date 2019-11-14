@@ -1,20 +1,21 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2014 Martin Slater
 # Created : Friday, 14 November 2014 10:07:21 AM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 import json
 import os
 import six
 from details.utils.misc import vlog, log
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Template(object):
     """ Template definition for use with the TemplateEngine """
@@ -31,10 +32,10 @@ class Template(object):
     def to_simple_dict(self):
         """ Convert to a simple dictionary suitable for outputing as json """
         options = []
-        for key, val in six.iteritems(self.options):
+        for key, val in self.options.items:
             new_opt = {}
             new_opt['name'] = key
-            for key2, val2 in six.iteritems(val):
+            for key2, val2 in val.items:
                 new_opt[key2] = val2
             options.append(new_opt)
 
@@ -47,13 +48,14 @@ class Template(object):
     def add_command_line_options(self, parser):
         """ Add a command line option for this template """
         first = True
-        for key, val in six.iteritems(self.options):
+        for key, val in self.options.items():
             # first option is positional the rest are flags
             vlog("Option : %s : %s" % (key, val))
             option_name = key
             if not first:
                 option_name = '--' + key
-            parser.add_argument(option_name, action='store', help=val['description'])
+            parser.add_argument(option_name, action='store',
+                                help=val['description'])
             first = False
 
     @staticmethod
@@ -97,8 +99,9 @@ class Template(object):
 
         return templates
 
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     pass

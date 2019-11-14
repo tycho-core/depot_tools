@@ -136,7 +136,7 @@ class Workspace(object):
         if package_set.has_conflicts():
             if force:
                 log('Forcing update')
-                for project, refs in six.iteritems(package_set.conflicted_dependencies()):
+                for project, refs in package_set.conflicted_dependencies().items():
                     log('  %s will use %s' % (project, str(refs[0])))
             else:
                 log('FAILED : There are conflicted dependencies')

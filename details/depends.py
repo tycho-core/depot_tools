@@ -360,7 +360,7 @@ class Dependency(object):
 
         # get list of all dependent projects and the branches referenced
         output['depends'] = []
-        for project, refs in flattened_deps.iteritems():
+        for project, refs in flattened_deps.items():
             visited_deps = set()
             branches = []
             for ref in refs:
@@ -438,7 +438,7 @@ class Dependency(object):
 
 def print_conflicts(conflicted_deps):
     """ Print all dependency conflicts and their dependency chain to stdout """
-    for project, refs in conflicted_deps.iteritems():
+    for project, refs in conflicted_deps.items():
         branches = ""
         projects = ""
         first = True

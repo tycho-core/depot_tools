@@ -171,7 +171,7 @@ class TemplateEngine(object):
         params = self.__make_default_params()
 
         # class specific params
-        for key, val in six.iteritems(inparams):
+        for key, val in inparams.items():
             params[key] = val
             params[key + '_upper'] = val.upper()
             params[key + '_camel'] = TemplateEngine.__make_camel_case(val)

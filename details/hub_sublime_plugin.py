@@ -1,13 +1,14 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2014 Martin Slater
 # Created : Thursday, 20 November 2014 12:47:23 PM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
-import sublime, sublime_plugin
+# -----------------------------------------------------------------------------
+import sublime
+import sublime_plugin
 from details.templateengine import TemplateEngine
 from details.template import Template
 from details.context import Context
@@ -17,9 +18,11 @@ import os
 import sys
 import six
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
+
 def get_current_view_file_dir():
     window = sublime.active_window()
     if window != None:
@@ -29,9 +32,10 @@ def get_current_view_file_dir():
 
     return None
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class CreateTemplateCommands:
     """ Hub sublime plugin """
@@ -40,13 +44,13 @@ class CreateTemplateCommands:
         """ Constructor """
         self.context = in_context
         self.engine = TemplateEngine(self.context)
-        self.templates = Template.get_available_templates(self.context, 
+        self.templates = Template.get_available_templates(self.context,
                                                           self.context.template_path)
-            
+
     def register_commands(self):
         """ Register commands """
 
-        # Sublime discovers commands by looking at all the definitions in the module for ones 
+        # Sublime discovers commands by looking at all the definitions in the module for ones
         # that derive from its command base classes (WindowCommand et al). So to add our commands
         # we need to dynamically create new types and add them to the module.
         for template in self.templates:
@@ -59,20 +63,19 @@ class CreateTemplateCommands:
 
             cmd_type = type(
                 type_name,
-                (sublime_plugin.WindowCommand,), 
+                (sublime_plugin.WindowCommand,),
                 {
-                    'template'     : template,
-                    'run'          : CreateTemplateCommands.__command_run,
-                    '__init__'     : CreateTemplateCommands.__command_init,
-                    'input_done'   : CreateTemplateCommands.__command_input_done,
-                    'input_change' : CreateTemplateCommands.__command_input_change,
-                    'input_cancel' : CreateTemplateCommands.__command_input_cancel,
-                    'engine'       : self.engine            
+                    'template': template,
+                    'run': CreateTemplateCommands.__command_run,
+                    '__init__': CreateTemplateCommands.__command_init,
+                    'input_done': CreateTemplateCommands.__command_input_done,
+                    'input_change': CreateTemplateCommands.__command_input_change,
+                    'input_cancel': CreateTemplateCommands.__command_input_cancel,
+                    'engine': self.engine
                 }
             )
             globals()[cmd_type.__name__] = cmd_type
             print("added : " + type_name)
-
 
     @staticmethod
     def __command_init(self, window):
@@ -82,7 +85,7 @@ class CreateTemplateCommands:
     def __command_input_done(self, text):
         if self.state == 'output_dir':
             self.output_dir = text
-            
+
             self.state = 'options'
             self.cur_option = 0
             self.option_name = None
@@ -94,17 +97,18 @@ class CreateTemplateCommands:
         # see if we are out of options
         if self.cur_option == len(self.template.options):
             print(str(self.template_params))
-            if not self.engine.expand_template(self.template, 
-                                               self.template_params, 
+            if not self.engine.expand_template(self.template,
+                                               self.template_params,
                                                self.output_dir):
-                sublime.status_message("Failed to create template " + self.template.name)
+                sublime.status_message(
+                    "Failed to create template " + self.template.name)
         else:
             opt = self.options[self.cur_option]
             self.option_name = opt[0]
             self.window.show_input_panel(
-                opt[1]['description'], "",          
-                self.input_done, 
-                self.input_change, 
+                opt[1]['description'], "",
+                self.input_done,
+                self.input_change,
                 self.input_cancel)
 
     @staticmethod
@@ -115,9 +119,9 @@ class CreateTemplateCommands:
     def __command_input_cancel(self, text):
         pass
 
-    @staticmethod 
+    @staticmethod
     def __command_run(self, name=None, dst_dir=None):
-        # get current files directory 
+        # get current files directory
         default_str = get_current_view_file_dir()
 
         # initial state
@@ -127,30 +131,31 @@ class CreateTemplateCommands:
         self.output_dir = None
         self.options = []
 
-        for key, val in six.iteritems(self.template.options):
+        for key, val in self.template.options.items:
             self.options.append([key, val])
 
         # get the directory to run in
-        self.window.show_input_panel("Enter output directory", 
-                                     default_str, 
-                                     self.input_done, 
-                                     self.input_change, 
+        self.window.show_input_panel("Enter output directory",
+                                     default_str,
+                                     self.input_done,
+                                     self.input_change,
                                      self.input_cancel)
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Commands
-#-----------------------------------------------------------------------------
-        
-class TyFormatFileCommand(sublime_plugin.WindowCommand):    
+# -----------------------------------------------------------------------------
+
+
+class TyFormatFileCommand(sublime_plugin.WindowCommand):
     def run(self, input_path=None):
         if input_path == None:
             default_str = get_current_view_file_dir()
-            self.window.show_input_panel("Enter file to format", 
+            self.window.show_input_panel("Enter file to format",
                                          default_str,
                                          self.input_done,
                                          self.input_change,
                                          self.input_cancel)
-        else:           
+        else:
             pass
 
     def format_file(self, input_file):
@@ -159,9 +164,10 @@ class TyFormatFileCommand(sublime_plugin.WindowCommand):
         file_type = Formatter.get_file_type(input_file)
         if file_type == 'c++':
             fmt = Formatter(context)
-            return fmt.format_file_inplace(input_file, silent=True)         
+            return fmt.format_file_inplace(input_file, silent=True)
 
-        sublime.status_message("Unknowm file type (%s)" % (os.path.splitext(input_file)[1]))
+        sublime.status_message("Unknowm file type (%s)" %
+                               (os.path.splitext(input_file)[1]))
         return False
 
     def input_done(self, input_file):
@@ -172,6 +178,7 @@ class TyFormatFileCommand(sublime_plugin.WindowCommand):
 
     def input_cancel(self):
         pass
+
 
 class TyFormatViewCommand(sublime_plugin.TextCommand):
     def run(self, edit):
@@ -199,7 +206,6 @@ class TyFormatViewCommand(sublime_plugin.TextCommand):
             os.remove(temp_name)
 
 
-
 def __register():
     context = Context()
 
@@ -208,11 +214,11 @@ def __register():
     plugin = CreateTemplateCommands(context)
     plugin.register_commands()
 
-#-----------------------------------------------------------------------------
+
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 if __name__ == "__main__":
     pass
 else:
     __register()
-
