@@ -1,19 +1,19 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2015 Martin Slater
 # Created : Wednesday, 11 March 2015 11:15:46 AM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 from __future__ import print_function
 from abc import ABCMeta, abstractmethod
 from details.utils.misc import log_banner
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 
 class VersionBase(object):
@@ -55,10 +55,10 @@ class ProjectBase(object):
     def get_owner(self):
         return self.__owner
 
+
 class ProviderQueryInterface(object):
     """ ProviderQueryInterface """
     __metaclass__ = ABCMeta
-
 
     def __init__(self):
         """ Constructor """
@@ -121,10 +121,11 @@ class InteractiveQueryInterface(object):
         for project in projects:
             name = project.get_display_name()
             if existing_deps and existing_deps.project_exists(name):
-                print('* %s:%s' % (project.get_owner().get_provider().source_name, name))
+                print('* %s:%s' %
+                      (project.get_owner().get_provider().source_name, name))
             else:
-                print('%s:%s' % (project.get_owner().get_provider().source_name, name))
-
+                print('%s:%s' %
+                      (project.get_owner().get_provider().source_name, name))
 
     def pick_project(self, existing_deps=None):
         """
@@ -143,7 +144,7 @@ class InteractiveQueryInterface(object):
         if existing_deps is None:
             projects = all_projects
         else:
-            for project  in all_projects:
+            for project in all_projects:
                 if not existing_deps.contains_project(project.get_display_name()):
                     projects.append(project)
 
@@ -153,7 +154,8 @@ class InteractiveQueryInterface(object):
 
         num_projects = 0
         for project in projects:
-            print('[%s] %s:%s' % (num_projects, project.get_owner().get_provider().source_name, project.get_display_name()))
+            print('[%s] %s:%s' % (num_projects, project.get_owner(
+            ).get_provider().source_name, project.get_display_name()))
             num_projects += 1
 
         print('')
@@ -164,7 +166,7 @@ class InteractiveQueryInterface(object):
             index = -1
             exit = False
             try:
-                ch = raw_input('Enter project index : ')
+                ch = input('Enter project index : ')
                 if ch == "q" or ch == "Q":
                     exit = True
                 else:
@@ -186,7 +188,6 @@ class InteractiveQueryInterface(object):
 
         return projects[index]
 
-
     @staticmethod
     def pick_project_version(project):
         """
@@ -202,7 +203,8 @@ class InteractiveQueryInterface(object):
 
         num_versions = 0
         for version in versions:
-            print('[%s] %s:%s' % (num_versions, project.get_display_name(), version.get_display_name()))
+            print('[%s] %s:%s' % (num_versions,
+                                  project.get_display_name(), version.get_display_name()))
             num_versions += 1
 
         print('')
@@ -210,7 +212,7 @@ class InteractiveQueryInterface(object):
             input_ok = True
             index = -1
             try:
-                index = int(raw_input('Enter version index : '))
+                index = int(input('Enter version index : '))
             except:
                 input_ok = False
 
@@ -243,13 +245,15 @@ class InteractiveQueryInterface(object):
         version = self.pick_project_version(project)
         return [project, version]
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def main():
     """ Main script entry point """
     pass
+
 
 if __name__ == "__main__":
     main()

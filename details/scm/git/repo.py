@@ -1,12 +1,12 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2014 Martin Slater
 # Created : Wednesday, 03 December 2014 05:52:40 PM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 import os
 import getpass
 import re
@@ -18,9 +18,9 @@ from details.scm.git.modification import Modification
 from details.scm.git.tools import has_credential_helper
 
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 class Repo(object):
     """ This represents a connection between a remote git repository and a
@@ -46,11 +46,12 @@ class Repo(object):
         """ Set local working directory """
         self.root_dir = local_dir
 
-           # check to see if this is a valid git repo
+        # check to see if this is a valid git repo
         if self.is_valid_working_copy():
             # load the git config file
             config = Config()
-            config.load_from_file(os.path.join(self.root_dir, '.git', 'config'))
+            config.load_from_file(os.path.join(
+                self.root_dir, '.git', 'config'))
 
             # get url for remote origin
             url = config.get_setting('remote', 'origin', 'url')
@@ -84,8 +85,9 @@ class Repo(object):
             return Repo.credentials_cache[url.host]
 
         # not there so prompt user for details
-        username = raw_input('Enter username for %s : ' % url.host)
-        password = getpass.getpass('Enter password for %s : ' % url.host.encode('ascii'))
+        username = input('Enter username for %s : ' % url.host)
+        password = getpass.getpass(
+            'Enter password for %s : ' % url.host.encode('ascii'))
 
         credentials = [username, password]
         Repo.credentials_cache[url.host] = credentials
@@ -95,7 +97,7 @@ class Repo(object):
     def is_valid_working_copy(self):
         """ Check that the root points to a valid git repository """
 
-        #TODO: This calls git to be really sure the repo is valid but it
+        # TODO: This calls git to be really sure the repo is valid but it
         #      is super slow so we don't do it, need to think whether we
         #      should at all or maybe only during a workspace verify.
         strong_check = False
@@ -134,7 +136,6 @@ class Repo(object):
 
         return None
 
-
     def is_valid_remote(self):
         """ Check that the URL points to a valid remote repository """
         self._set_remote_url_and_credentials(self.remote_url)
@@ -159,9 +160,9 @@ class Repo(object):
 
     def clone_branch(self, branch_name, capture=True):
         """ Clone a specific branch from a remote repository """
-        #todo : if repo already exists should we delete and resync
+        # todo : if repo already exists should we delete and resync
         #       need to check if there have been modificiations
-        #if self.is_valid_working_copy():
+        # if self.is_valid_working_copy():
         #    return
         self._set_remote_url_and_credentials(self.remote_url)
         exit_code, _, _ = self.execute_git(['clone', '-b', branch_name, str(self.remote_url),
@@ -190,18 +191,19 @@ class Repo(object):
 
     def switch_branch(self, branch_name, capture=True):
         """ Switch the local working copy to another existing branch """
-        exitcode, _, _ = self.execute_git(['checkout', branch_name], capture=True)
+        exitcode, _, _ = self.execute_git(
+            ['checkout', branch_name], capture=True)
         return exitcode == 0
 
     def is_clean(self):
         """ Returns true if there are no modification to the local working copy """
         return len(self.get_modifications()) == 0
 
-
     def get_modifications(self):
         """ Returns:
             scm.Modification[]  : List of modification made to the working copy """
-        exitcode, output, _ = self.execute_git(['status', '--porcelain'], capture=True)
+        exitcode, output, _ = self.execute_git(
+            ['status', '--porcelain'], capture=True)
 
         if exitcode != 0:
             return None
@@ -211,7 +213,8 @@ class Repo(object):
 
     def discard_modifications(self):
         """ Discard all modification to the local working copy. This is irreversable. """
-        exitcode, _, _ = self.execute_git(['reset', '--hard', 'HEAD'], capture=True)
+        exitcode, _, _ = self.execute_git(
+            ['reset', '--hard', 'HEAD'], capture=True)
         return exitcode == 0
 
     def stash_modifications(self):

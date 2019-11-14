@@ -94,7 +94,7 @@ class Workspace(object):
             if quiet:
                 fatal_error("Workspace already exists")
             else:
-                answer = raw_input(
+                answer = input(
                     "Delete all contents of %s? (y/N)" % root_dir)
                 if answer != 'y':
                     fatal_error("Workspace already exists")
@@ -335,7 +335,7 @@ class Workspace(object):
         """
         if len(args) == 0:
             return
-        from utils.misc import execute
+        from .utils.misc import execute
         results = []
         console = self.context.console
         task_name = ' '.join(args)
