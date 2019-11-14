@@ -63,7 +63,7 @@ def get_archive_file(repo, treeish, path):
     Returns:
         string : Contents if successful of None otherwise.
     """
-    tar_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()) + '.zip')
+    tar_path = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()) + '.tar')
     res = get_archive(repo, treeish, path, tar_path)
     contents = None
     if res:
