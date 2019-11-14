@@ -32,10 +32,10 @@ class Template(object):
     def to_simple_dict(self):
         """ Convert to a simple dictionary suitable for outputing as json """
         options = []
-        for key, val in self.options.items:
+        for key, val in self.options.items():
             new_opt = {}
             new_opt['name'] = key
-            for key2, val2 in val.items:
+            for key2, val2 in val.items():
                 new_opt[key2] = val2
             options.append(new_opt)
 
