@@ -8,6 +8,7 @@
 # Imports
 # -----------------------------------------------------------------------------
 from __future__ import print_function
+import os
 from abc import ABCMeta, abstractmethod
 from details.utils.misc import log_banner
 
@@ -162,27 +163,16 @@ class InteractiveQueryInterface(object):
         print('[Q] Quit')
         print('')
         while True:
-            input_ok = True
             index = -1
-            do_quit = False
-            try:
-                ch = input('Enter project index : ')
-                if ch == "q" or ch == "Q":
-                    do_quit = True
-                else:
-                    index = int(ch)
-            except:
-                input_ok = False
-
-            if do_quit:
-                import sys
-                sys.exit(0)
+            ch = input('Enter project index : ')
+            if ch == "q" or ch == "Q":
+                os._exit(0)
+                return
+            else:
+                index = int(ch)
 
             if index < 0 or index >= num_projects:
-                input_ok = False
-
-            if not input_ok:
-                print('Invalid selection')
+                print('Invalid selection "' + ch + '"')
             else:
                 break
 
