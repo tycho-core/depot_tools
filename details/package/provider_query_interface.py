@@ -164,19 +164,19 @@ class InteractiveQueryInterface(object):
         while True:
             input_ok = True
             index = -1
-            exit = False
+            do_quit = False
             try:
                 ch = input('Enter project index : ')
                 if ch == "q" or ch == "Q":
-                    exit = True
+                    do_quit = True
                 else:
                     index = int(ch)
             except:
                 input_ok = False
 
-            if exit:
+            if do_quit:
                 import sys
-                sys.exit()
+                sys.exit(0)
 
             if index < 0 or index >= num_projects:
                 input_ok = False

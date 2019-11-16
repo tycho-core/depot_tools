@@ -1,13 +1,13 @@
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Tycho Library
 # Copyright (C) 2015 Martin Slater
 # Created : Thursday, 05 February 2015 11:36:25 PM
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #pylint: disable=W0703
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Imports
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 from __future__ import print_function
 import sys
 import argparse
@@ -17,13 +17,15 @@ import cProfile
 import io
 import pstats
 import signal
+import os
 from functools import partial
 from details.context import Context
 from details.utils.misc import vlog, enable_verbose_log
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Class
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class ConsoleApp(object):
     """ ConsoleApp """
@@ -35,7 +37,8 @@ class ConsoleApp(object):
         """ Abort the running application """
         print('User terminated')
         self.context.console.shutdown()
-        sys.exit(1)
+        # sys.exit(1)
+        os._exit(1)
 
     @staticmethod
     def to_json_string(obj):
@@ -137,7 +140,7 @@ class ConsoleApp(object):
             pr = cProfile.Profile()
             pr.enable()
 
-        res  = self.app.app_main(self.context, self.options)
+        res = self.app.app_main(self.context, self.options)
 
         if self.options.profile:
             pr.disable()
@@ -151,24 +154,28 @@ class ConsoleApp(object):
 
         return ConsoleApp.EXIT_SUCCESS if res is None else res
 
+
 def configure_providers(context):
     from details.package.package_manager import PackageManager
 
     # configure providers
     context.console.start_task('Configuring providers')
-    provider_file = open(os.path.join(context.config_dir, 'hub-providers.json'), 'r')
+    provider_file = open(os.path.join(
+        context.config_dir, 'hub-providers.json'), 'r')
     providers = json.load(provider_file)
     provider_file.close()
     context.package_manager = PackageManager(context, providers)
     context.console.end_task()
 
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Main
-#-----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def main():
     """ Main script entry point """
     pass
+
 
 if __name__ == "__main__":
     main()
