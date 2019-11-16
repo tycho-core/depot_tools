@@ -103,7 +103,7 @@ class GitLabQueryInterface(ProviderQueryInterface):
 
                 cache_objs = [{
                     'name': project.name,
-                    'branches': [version.name for version in project.branches]
+                    'branches': [version.get_display_name() for version in project.branches]
                 } for project in self.__projects]
 
                 self.__context.cache.save_to_cache(
