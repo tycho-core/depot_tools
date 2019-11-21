@@ -151,12 +151,16 @@ class Workspace(object):
         self.context.console.end_task()
 
         # generate cmake files
-        self.context.console.start_task("Process CMake")
-        cmake = CMakeBuildProcessor(self.context)
-        cmake.process(self, self.__package_set)
-        cmake.write_cmake_file(os.path.join(
-            self.root_dir, self.context.local_workspace_cmake_filename))
-        self.context.console.end_task()
+        if os.path.exists(self.context.local_workspace_cmake_filename):
+            self.context.console.write_line(
+                "CMake: Not overwriting " + self.context.local_workspace_cmake_filename)
+        else:
+            self.context.console.start_task("Process CMake")
+            cmake = CMakeBuildProcessor(self.context)
+            cmake.process(self, self.__package_set)
+            cmake.write_cmake_file(os.path.join(
+                self.root_dir, self.context.local_workspace_cmake_filename))
+            self.context.console.end_task()
 
         # save current workspace state
         self.save_local_workspace_info()
